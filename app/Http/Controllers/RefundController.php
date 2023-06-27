@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Refund;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -35,7 +35,8 @@ class RefundController extends Controller
      */
     public function index()
     {
-        $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
+        // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
+        $data = Transaction::get()->toArray();
         
         
         // $data = Refund::get()->toArray();

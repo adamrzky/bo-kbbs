@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    protected $connection = 'mysql2';
-    protected $table = 'qris_transaction_aquerier_main';
+    // protected $connection = 'mysql2';
+    protected $table = 'QRIS_TRANSACTION_AQUERIER_MAIN';
     /**
      * The attributes that are mass assignable.
      *	

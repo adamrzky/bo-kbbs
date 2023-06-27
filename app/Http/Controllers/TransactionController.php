@@ -62,9 +62,11 @@ class TransactionController extends Controller
     public function data(Request $request)
     {
         if ($request->ajax()) {
+
+            $data = Transaction::get()->toArray();
        
 
-        $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
+        // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
         
         // foreach ($data as $key => $value) {
           
@@ -82,6 +84,7 @@ class TransactionController extends Controller
        
       
 
+        // dd($data);
         return DataTables::of($data)
     
         ->toJson();

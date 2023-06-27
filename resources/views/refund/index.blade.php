@@ -60,34 +60,35 @@
                                 <label>Select RNN : </label>
                                 <select class="form-control select2" name="RRN" id="RRN" required>
                                     <option value=""></option>
-									@foreach (array_reverse($data) as $dropdown)
+                                    @foreach (array_reverse($data) as $dropdown)
                                         <option value="{{ $dropdown['RETRIEVAL_REFERENCE_NUMBER'] }}"
                                             data-fetch1="{{ $dropdown['AMOUNT'] }}"
                                             data-fetch2="{{ $dropdown['MERCHANT_ACC_NUMBER'] }}"
                                             data-fetch3="{{ $dropdown['INVOICE_NUMBER'] }}"
                                             data-fetch4="{{ $dropdown['ON_US'] }}"
                                             data-fetch5="{{ $dropdown['UPDATED_AT'] }}">
-                                            {{ $dropdown['RETRIEVAL_REFERENCE_NUMBER'] }} 
-											({{ $dropdown['ON_US'] == 1 ? 'ON US' : 'OF US' }}) ->
-											{{ date('Y-m-d H:i', strtotime($dropdown['CREATED_AT'])) }}
+                                            {{ $dropdown['RETRIEVAL_REFERENCE_NUMBER'] }}
+                                            ({{ $dropdown['ON_US'] == 1 ? 'ON US' : 'OF US' }})
+                                            ->
+                                            {{ date('Y-m-d H:i', strtotime($dropdown['CREATED_AT'])) }}
 
-										</option>
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
                             <!-- <div class="form-group col-7">
-               <label> Select Invoice </label>
-               
-               <select class="form-control" name="INVOICE_NUMBER" id="INVOICE_NUMBER" required>
-                                        <option value="">Select Invoice</option>
-                @foreach ($data as $dropdown)
+                   <label> Select Invoice </label>
+                   
+                   <select class="form-control" name="INVOICE_NUMBER" id="INVOICE_NUMBER" required>
+                                            <option value="">Select Invoice</option>
+                    @foreach ($data as $dropdown)
     <option value="{{ $dropdown['INVOICE_NUMBER'] }}" data-fetch1="{{ $dropdown['AMOUNT'] }}" data-fetch2="{{ $dropdown['MERCHANT_ACC_NUMBER'] }}" > {{ $dropdown['INVOICE_NUMBER'] }}  </option>
     @endforeach
-               </select>
-               
-               
+                   </select>
+                   
+                   
 
-              </div> -->
+                  </div> -->
                             <div class="form-group col-7">
                                 <label>Invoice :</label>
                                 <input type="number" id="INVOICE_NUMBER" name="INVOICE_NUMBER" class="form-control">
@@ -144,12 +145,11 @@
 
 <!-- Script -->
 <script>
-
-	   // Inisialisasi Select2 pada elemen <select>
-		$(document).ready(function() {
+    // Inisialisasi Select2 pada elemen <select>
+    $(document).ready(function() {
         $('#RRN').select2();
     });
-	
+
     $(document).ready(function() {
         $('#RRN').on('change', function() {
             const selected = $(this).find('option:selected');
