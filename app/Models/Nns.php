@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Nns extends Model
 {
     // protected $connection = 'mysql2';
-    protected $table = 'qris_list_nns';
+    protected $table = 'QRIS_LIST_NNS';
     public $timestamps = false;
     
    
