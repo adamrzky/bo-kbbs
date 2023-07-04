@@ -121,7 +121,8 @@ class TransactionController extends Controller
     public function detail($id)
     {
         $idString = strval($id);
-        $datas = Http::get('http://192.168.26.26:10002/tm.php')->json();
+        // $datas = Http::get('http://192.168.26.26:10002/tm.php')->json();
+        $datas = Transaction::get()->toArray();
         
         // $dataDecode = json_decode($datas);
         

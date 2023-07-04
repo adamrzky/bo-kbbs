@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MerchantDomestic extends Model
 {
-    protected $table = 'qris_merchant_domestic';
+    protected $table = 'QRIS_MERCHANT_DOMESTIC';
     public $timestamps = false;
        
     /**

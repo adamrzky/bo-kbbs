@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Refund extends Model
 {
-    protected $table = 'qris_transaction_aquerier_main';
+    protected $table = 'QRIS_TRANSACTION_AQUERIER_MAIN';
     /**
      * The attributes that are mass assignable.
      *	
