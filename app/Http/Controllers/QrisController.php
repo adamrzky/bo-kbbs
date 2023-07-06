@@ -16,11 +16,18 @@ use App\Models\Merchant;
 class QrisController extends Controller
 {
 
-    /**
+     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+    function __construct()
+    {
+        $this->middleware('permission:generate-qris|qris-create|qris-edit|qris-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:qris-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:qris-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:qris-delete', ['only' => ['destroy']]);
+    }
     public function index()
     {
 

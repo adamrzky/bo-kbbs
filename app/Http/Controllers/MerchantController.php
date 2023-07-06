@@ -6,11 +6,14 @@ use App\Models\Merchant;
 use App\Models\Mcc;
 use App\Models\MerchantDetails;
 use App\Models\MerchantDomestic;
+use App\Models\UserMerchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use App\Traits\Common;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+
 
 class MerchantController extends Controller
 {
@@ -31,6 +34,9 @@ class MerchantController extends Controller
 
     public function index()
     {
+        $userId = Auth::id();
+
+
         $merchant = Merchant::latest()->paginate(5);
 
         return view('merchant.index', compact('merchant'))->with('i', (request()->input('page', 1) - 1) * 5);
@@ -74,9 +80,9 @@ class MerchantController extends Controller
         ]);
 
         $cek = $this->cekNorek($request->norek);
-        if ($cek['rc'] != '0000') {
-            return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-        }
+        // if ($cek['rc'] != '0000') {
+        //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+        // }
 
         try {
             $date = date('Y-m-d H:i:s');
@@ -111,7 +117,18 @@ class MerchantController extends Controller
                 'ACCOUNT_NUMBER' => $request->norek,
             ];
 
-            $merchant_id = Merchant::create($data_merchant)->ID;
+            $merchants = Merchant::create($data_merchant);
+
+            $merchant_id = $merchants->ID;
+
+            $data_user_has_merchant = [
+
+                'USER_ID' => Auth::id(),
+                'MERCHANT_ID' =>  $merchant_id,
+            ];
+
+
+            $user_has_merchant = UserMerchant::create($data_user_has_merchant);
 
             $data_detail = [
                 'MERCHANT_ID' => $merchant_id,
@@ -122,6 +139,8 @@ class MerchantController extends Controller
                 'CRITERIA' => $request->criteria,
             ];
             $merchant_detail = MerchantDetails::create($data_detail);
+
+
 
             $param = [
                 'MERCHANT_DOMESTIC' => $data_domestic,
