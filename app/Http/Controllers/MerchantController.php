@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use App\Traits\Common;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 
 class MerchantController extends Controller
@@ -34,12 +37,63 @@ class MerchantController extends Controller
 
     public function index()
     {
-        $userId = Auth::id();
+      
+        $getUserId = Auth::id();
+        $userId = $getUserId;
+
+        $query = DB::table('QRIS_MERCHANT')
+            ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
+            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            ->select('QRIS_MERCHANT.*');
+
+        if ($userId != 1) {
+            $query->where('users.id', $userId);
+        }
+
+        $merchants = $query->paginate(5); // Specify the number of items per page (e.g., 5)
+
+        return view('merchant.index', ['merchants' => $merchants]);
+
+        // dd($merchants);
 
 
-        $merchant = Merchant::latest()->paginate(5);
 
-        return view('merchant.index', compact('merchant'))->with('i', (request()->input('page', 1) - 1) * 5);
+    //     if ($userId == 1) {
+    //         $merchants = Merchant::all()->toArray();
+    //         $currentPage = Request::get('page') ?: 1;
+    //         $perPage = 5; 
+    //         $offset = ($currentPage - 1) * $perPage;
+    //         $slicedMerchants = array_slice($merchants, $offset, $perPage);
+    //         $merchant = new LengthAwarePaginator(
+    //             new Collection($slicedMerchants),
+    //             count($merchants),
+    //             $perPage,
+    //             $currentPage
+    //         );
+    //         // dd($merchants);
+    //     }else {
+        
+    //     $userMerchant = new UserMerchant();
+    //     $filteredUserMerchants = $userMerchant->filterByUser($userId)->toArray();
+
+    //     // dd($filteredUserMerchants);
+
+    //     $currentPage = Request::get('page') ?: 1;
+    //     $perPage = 5; 
+    //     $offset = ($currentPage - 1) * $perPage;
+    //     $slicedMerchants = array_slice($filteredUserMerchants, $offset, $perPage);
+    //     $merchant = new LengthAwarePaginator(
+    //         new Collection($slicedMerchants),
+    //         count($filteredUserMerchants),
+    //         $perPage,
+    //         $currentPage
+    //     );
+
+    // }
+
+        // return view('merchant.index', compact('merchant'));
+                
+        
     }
 
     /**
@@ -80,9 +134,9 @@ class MerchantController extends Controller
         ]);
 
         $cek = $this->cekNorek($request->norek);
-        // if ($cek['rc'] != '0000') {
-        //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-        // }
+        if ($cek['rc'] != '0000') {
+            return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+        }
 
         try {
             $date = date('Y-m-d H:i:s');

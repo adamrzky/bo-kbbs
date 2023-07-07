@@ -44,8 +44,9 @@
         <th>Action</th>
     </tr>
 
-    @foreach ($merchant as $row)
+    @foreach ($merchants as $row)
     <tr>
+        {{-- {{dd($merchant)}} --}}
         <td>{{ $row->ID }}</td>
         <td>{{ $row->MERCHANT_NAME }}</td>
         <td>{{ $row->MERCHANT_CITY }}</td>
@@ -64,7 +65,7 @@
 </table>
 
 
-{!! $merchant->links() !!}
+{!! $merchants->links() !!}
 
 <div class="modal" id="modalSaldo" tabindex="-1">
     <div class="modal-dialog">
