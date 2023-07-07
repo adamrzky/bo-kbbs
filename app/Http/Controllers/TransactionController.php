@@ -11,6 +11,8 @@ use App\Models\Merchant;
 use App\Models\MerchantDetails;
 use App\Models\Nns;
 // use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -61,9 +63,31 @@ class TransactionController extends Controller
 
     public function data(Request $request)
     {
+
+  
+
+
         if ($request->ajax()) {
 
-            $data = Transaction::get()->toArray();
+            // $data = Transaction::get()->toArray();
+
+            $getUserId = Auth::id();
+            $userId = $getUserId;
+    
+            $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+            ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+        
+            if ($userId != 1) {
+                $query->where('users.id', $userId);
+            }
+    
+            // dd($query->get()->toArray());
+
+            $data = $query->get()->toArray();
+
+
        
 
         // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
