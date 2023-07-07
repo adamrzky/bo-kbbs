@@ -76,8 +76,9 @@
                         <label>Merchant Code:</label>
                         <select class="form-control" name="MERCHANT_ID" id="MERCHANT_ID" required>
                             @foreach (array_reverse($merchant) as $dropdown)
-                            <option value="{{ $dropdown['ID'] }}"> {{ $dropdown['MERCHANT_CODE'] }} -
-                                {{ $dropdown['MERCHANT_NAME'] }}
+                            {{-- {{dd($merchant)}} --}}
+                            <option value="{{ $dropdown->ID }}"> {{ $dropdown->MERCHANT_CODE }} -
+                                {{ $dropdown->MERCHANT_NAME }}
                             </option>
                             @endforeach
                         </select>

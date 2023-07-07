@@ -12,6 +12,8 @@ use Intervention\Image\ImageManager;
 use Image;
 use Illuminate\Support\Facades\Route;
 use App\Models\Merchant;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class QrisController extends Controller
 {
@@ -31,7 +33,21 @@ class QrisController extends Controller
     public function index()
     {
 
-        $merchant = Merchant::orderBy('ID')->get()->toArray();
+        $getUserId = Auth::id();
+        $userId = $getUserId;
+
+        $query = DB::table('QRIS_MERCHANT')
+            ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
+            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            ->select('QRIS_MERCHANT.*');
+
+        if ($userId != 1) {
+            $query->where('users.id', $userId);
+        }
+
+        $merchant = $query->get()->toArray();
+
+        // $merchant = Merchant::orderBy('ID')->get()->toArray();
 
         // dd($merchant);
 
