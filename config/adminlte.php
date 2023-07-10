@@ -362,6 +362,7 @@ return [
         [
             'text'    => 'User Management',
             'icon'    => 'far fa-fw fa-user',
+            'can'  => 'user-create',
             'submenu' => [
                 [
                     'text' => 'Manage Users',
@@ -375,10 +376,7 @@ return [
                     'text' => 'Manage Permissions',
                     'url'  => 'permissions',
                 ],
-                [
-                    'text' => 'Manage Product',
-                    'url'  => 'products',
-                ],
+              
             ],
         ],
         // [
