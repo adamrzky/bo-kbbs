@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -36,23 +37,38 @@ class RefundController extends Controller
     public function index()
     {
         // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
-        $data = Transaction::get()->toArray();
+        // $data = Transaction::get()->toArray();
+        $getUserId = Auth::id();
+        $userId = $getUserId;
         
+        $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+            ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
         
-        // $data = Refund::get()->toArray();
+        if ($userId != 1) {
+            $query->where('users.id', $userId);
+        }
+        
+        $datas = $query->get()->toArray();
 
+        $data = []; // Membuat array kosong
+        
+        foreach ($datas as $item) {
+            $data[] = (array) $item; // Mengubah objek menjadi array asosiatif
+        }
+        
+        $amount = null; // Nilai default jika $amount null
+        
         foreach ($data as $p) {
-            $amount = $p['AMOUNT'];
-       
+            if ($p['AMOUNT'] !== null) {
+                $amount = $p['AMOUNT'];
+                break; // Keluar dari loop jika $amount sudah ditemukan
             }
+        }
         
-
-        // $user = new AuthenticatesUsers();
-        // dd($user);
-
-        // dd($amount);
-        // dd($data);
         return view('refund.index', compact('data', 'amount'));
+        
     }
 
     /**
