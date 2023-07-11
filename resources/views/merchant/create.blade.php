@@ -100,7 +100,7 @@
 		$("#prov").change(function() {
 			var provinsi = $("#prov").val();
 			$.ajax({
-				url: `http://182.23.93.76:10002/api.php?negara=ID&prov=` + provinsi,
+				url: `http://10.11.13.15:10001/api.php?negara=ID&prov=` + provinsi,
 				type: 'GET',
 				success: function(msg) {
 					var res = JSON.parse(msg);
