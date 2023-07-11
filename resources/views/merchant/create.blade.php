@@ -78,9 +78,9 @@
 							<label>Kodepos</label>
 							<input type="number" class="form-control" name="postalcode" id="postalcode" value="{{ old('postalcode') }}">
 						</div>
-						<div class="form-group col-6">
-							<label>Fee Merchant</label>
-							<input type="number" class="form-control" name="fee" id="fee" value="0" min="0" max="100" value="{{ old('fee') }}">
+						<div hidden  class="form-group  col-6">
+							<label >Fee Merchant</label> 
+							<input type="number" class="form-control" name="fee" id="fee" hidden  value="0" min="0" max="100" value="{{ old('fee') }}">
 						</div>
 					</div>
 				</div>
