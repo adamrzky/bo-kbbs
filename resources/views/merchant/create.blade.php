@@ -100,10 +100,13 @@
 		$("#prov").change(function() {
 			var provinsi = $("#prov").val();
 			$.ajax({
-				url: `http://10.11.13.15:10001/api.php?negara=ID&prov=` + provinsi,
+				url: `/api/getLokasi/${provinsi}`,
 				type: 'GET',
 				success: function(msg) {
-					var res = JSON.parse(msg);
+					
+					var res = msg;
+
+					// console.log(res);
 					var select = $('#city');
 					var option = new Option('-', '');
 					select.focus();

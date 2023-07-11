@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GetLokasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 Route::post('/detail_qris', 'API\QrisController@detailQris')->name('detail_qris');
+// Route::get('/getLokasi', 'API\GetLokasiController@getLokasi')->name('getLokasi');
+Route::get('/getLokasi/{provinsi}', 'API\GetLokasiController@getLokasi')->name('getLokasi');
 
 Route::group(['middleware' => ['cors']], function () {
     //

@@ -53,45 +53,6 @@ class MerchantController extends Controller
         $merchants = $query->paginate(5); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.index', ['merchants' => $merchants]);
-
-        // dd($merchants);
-
-
-
-    //     if ($userId == 1) {
-    //         $merchants = Merchant::all()->toArray();
-    //         $currentPage = Request::get('page') ?: 1;
-    //         $perPage = 5; 
-    //         $offset = ($currentPage - 1) * $perPage;
-    //         $slicedMerchants = array_slice($merchants, $offset, $perPage);
-    //         $merchant = new LengthAwarePaginator(
-    //             new Collection($slicedMerchants),
-    //             count($merchants),
-    //             $perPage,
-    //             $currentPage
-    //         );
-    //         // dd($merchants);
-    //     }else {
-        
-    //     $userMerchant = new UserMerchant();
-    //     $filteredUserMerchants = $userMerchant->filterByUser($userId)->toArray();
-
-    //     // dd($filteredUserMerchants);
-
-    //     $currentPage = Request::get('page') ?: 1;
-    //     $perPage = 5; 
-    //     $offset = ($currentPage - 1) * $perPage;
-    //     $slicedMerchants = array_slice($filteredUserMerchants, $offset, $perPage);
-    //     $merchant = new LengthAwarePaginator(
-    //         new Collection($slicedMerchants),
-    //         count($filteredUserMerchants),
-    //         $perPage,
-    //         $currentPage
-    //     );
-
-    // }
-
-        // return view('merchant.index', compact('merchant'));
                 
         
     }
