@@ -67,14 +67,14 @@
                     </div> --}}
                     <div class="form-group col-6">
                         <label>QR Type :</label>
-                        <select class="form-control" name="TYPE" id="TYPE" required onchange="checkQRType()">
+                        <select class="form-control select2"  name="TYPE" id="TYPE" required onchange="checkQRType()">
                             <option value="STATIS">STATIS</option>
                             <option value="DINAMIS">DINAMIS</option>
                         </select>
                     </div>
                     <div class="form-group col-6">
                         <label>Merchant Code:</label>
-                        <select class="form-control" name="MERCHANT_ID" id="MERCHANT_ID" required>
+                        <select class="form-control select2" name="MERCHANT_ID" id="MERCHANT_ID" required>
                             @foreach (array_reverse($merchant) as $dropdown)
                             {{-- {{dd($merchant)}} --}}
                             <option value="{{ $dropdown->ID }}"> {{ $dropdown->MERCHANT_CODE }} -
@@ -143,7 +143,8 @@
 
        // Inisialisasi Select2 pada elemen <select>
 		$(document).ready(function() {
-        $('#MERCHANT_ID').select2();
+        // $('#MERCHANT_ID').select2();
+        $('.select2').select2();
     });
     
     
