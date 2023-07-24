@@ -14,13 +14,8 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Block direct access to web.config
-    RewriteCond %{REQUEST_URI} ^/web.config [NC]
-    RewriteRule ^ - [F]
-
-    # Block direct access to web.php
-    RewriteCond %{REQUEST_URI} ^/web.php [NC]
-    RewriteRule ^ - [F]
+    # Redirect requests for /web.config to 404 page
+    RewriteRule ^web\.config$ - [R=404,L]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
