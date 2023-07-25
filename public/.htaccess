@@ -15,7 +15,7 @@
     RewriteRule ^ %1 [L,R=301]
 
     # Redirect requests for /web.config to 404 page
-    RewriteRule ^web\.config$ - [R=404,L]
+    # RewriteRule ^web\.config$ - [R=404,L]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
