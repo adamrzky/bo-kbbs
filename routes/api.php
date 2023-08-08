@@ -18,6 +18,18 @@ use App\Http\Controllers\GetLokasiController;
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+
+
+// Route::post('/merchants', 'API\MerchantClientController@detailQris')->name('merchant_client');
+
+
+Route::get('/merchants', 'API\client\MerchantClientController@apiIndex')->name('api.merchant.index');  
+Route::post('/merchants/store', 'API\client\MerchantClientController@apiStore')->name('api.merchant.store');  
+Route::post('/qris/get', 'API\client\QrisClientController@get')->name('api.qris.get');  
+Route::post('/refund/get', 'API\client\RefundClientController@get')->name('api.refund.get');  
+
+
 Route::post('/detail_qris', 'API\QrisController@detailQris')->name('detail_qris');
 // Route::get('/getLokasi', 'API\GetLokasiController@getLokasi')->name('getLokasi');
 Route::get('/getLokasi/{provinsi}', 'API\GetLokasiController@getLokasi')->name('getLokasi');
