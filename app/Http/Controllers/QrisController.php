@@ -87,16 +87,19 @@ class QrisController extends Controller
 
         // dd($data['param']);
 
+        $customApiBaseUrl = env('BASE_URL');
+
         $token = Http::timeout(5)->withHeaders([
             'Content-Type' => 'application/json',
             'Access-Control-Allow-Origin' => '*',
         ])->post(
-            'http://192.168.26.19:4080/api/gettoken',
+            $customApiBaseUrl . '/api/gettoken',
             [
                 "email" => "admin@gmail.com",
                 "password" => "1234qwer"
             ]
         );
+        
         $resptoken = $token->json();
         // dd($resptoken);
 
@@ -121,7 +124,7 @@ class QrisController extends Controller
             'Authorization' => 'Bearer ' . $resptoken['access_token'],
             'Content-Type' => 'application/json',
         ])->post(
-            'http://192.168.26.19:4080/api/qris',
+            $customApiBaseUrl . '/api/qris',
             $data
         );
 

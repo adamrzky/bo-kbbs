@@ -39,54 +39,21 @@ public function get(Request $request)
         // Log::channel('apilog')->info('REQ SEND API : ' . json_encode($data));
 
         try {
+
+            $customApiBaseUrl = env('API_URL');
+            
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post('http://192.168.26.26:9800/v1/api/aquerier/create/qr', $data);
+            ])->post(
+            $customApiBaseUrl . '/v1/api/aquerier/create/qr', $data);
+
+            
 
             // Log::channel('apilog')->info('RESP SEND API : ' . json_encode($response->json()));
 
             $res = $response->json();
-            // if ($res['RC'] == '0000') {
-            //     $qris = $res['MPO']['QRIS'];
-            //     $nmid = $res['MPO']['NMID'];
-            //     // $qrcode = QrCode::size(400)->generate($qris);
-            //     $qrcode = base64_encode(
-            //         QrCode::format('png')
-            //             ->size(200)
-            //             ->generate($qris),
-            //     );
 
-            //     //qrispng
-            //     $wmQris = Image::make('images/qris.png');
-            //     $wmQris->resize(200, 70);
-
-            //     //getPngQRCode
-            //     // $wmQrcode = Image::make($qrcode);
-            //     // $wmQrcode->resize(100, 50);
-
-            //     //canvas
-            //     $canvas = Image::canvas(300, 350, '#ffff');
-
-            //     //insertToCanvas
-            //     $canvas->insert($wmQris, 'top', 10, 10);
-            //     $canvas->insert($qrcode, 'center', 0, 20);
-            //     $canvas->text('NMID : ' . $nmid, 50, 330, function ($font) {
-            //         $font->file(storage_path('font/font3.ttf'));
-            //         $font->size(12);
-            //     });
-
-            //     $canvas->save('images/hasil.png');
-
-            //     $base64 = base64_encode($canvas);
-            //     $detail = $this->parsingQrCodeASPI($qris);
-            //     $res['MPO']['DETAIL'] = $detail;
-            //     $res['MPO']['QR'] = $base64;
-
-            //     Log::channel('apilog')->info('RESP : ' . json_encode($res));
-            // } else {
-            //     $res = $response->json();
-            //     Log::channel('apilog')->info('RESP : ' . json_encode($res));
-            // }
         } catch (\Throwable $th) {
             // Log::channel('apilog')->info('RESP SEND API : ' . $th->getMessage());
             $res = [

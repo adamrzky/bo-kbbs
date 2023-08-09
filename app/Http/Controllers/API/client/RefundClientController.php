@@ -33,11 +33,12 @@ class RefundClientController extends Controller
             
         // Log::channel('apilog')->info('REQ SEND API (REFUND) : ' .  json_encode($data));
             // dd($data);
+            $customApiBaseUrl = env('API_URL');
             
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 ])->post(
-                    'http://192.168.26.26:9800/v1/api/refund',
+                    $customApiBaseUrl . '/v1/api/refund',
                     $data
                 );
 

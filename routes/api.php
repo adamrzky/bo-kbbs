@@ -24,10 +24,10 @@ use App\Http\Controllers\GetLokasiController;
 // Route::post('/merchants', 'API\MerchantClientController@detailQris')->name('merchant_client');
 
 
-Route::get('/merchants', 'API\client\MerchantClientController@apiIndex')->name('api.merchant.index');  
-Route::post('/merchants/store', 'API\client\MerchantClientController@apiStore')->name('api.merchant.store');  
-Route::post('/qris/get', 'API\client\QrisClientController@get')->name('api.qris.get');  
-Route::post('/refund/get', 'API\client\RefundClientController@get')->name('api.refund.get');  
+// Route::get('/merchants', 'API\client\MerchantClientController@apiIndex')->name('api.merchant.index');  
+// Route::post('/merchants/store', 'API\client\MerchantClientController@apiStore')->name('api.merchant.store');  
+// Route::post('/qris/get', 'API\client\QrisClientController@get')->name('api.qris.get');  
+// Route::post('/refund/get', 'API\client\RefundClientController@get')->name('api.refund.get');  
 
 
 Route::post('/detail_qris', 'API\QrisController@detailQris')->name('detail_qris');
@@ -44,6 +44,12 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('/qris', 'API\QrisController@store')->name('api.qris');
         Route::post('/refund', 'API\RefundController@store')->name('api.refund');
         Route::get('/tranmain', 'API\TranmainController@get')->name('api.tranmainget');
+
+        Route::get('/merchants', 'API\client\MerchantClientController@apiIndex')->name('api.merchant.index');  
+        Route::post('/merchants/store', 'API\client\MerchantClientController@apiStore')->name('api.merchant.store');  
+        Route::post('/qris/get', 'API\client\QrisClientController@get')->name('api.qris.get');  
+        Route::post('/refund/get', 'API\client\RefundClientController@get')->name('api.refund.get');  
+
     });
 
 });

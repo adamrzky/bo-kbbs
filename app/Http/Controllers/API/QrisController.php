@@ -48,93 +48,18 @@ class QrisController extends Controller
             'MPI' => $mpi,
         ];
 
-        // switch ($request->qrType) {
-        //     case '1':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '2':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '3':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '4':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '5':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '6':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '7':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT'],
-        //                 "TIP_INDICATOR" => $request->param['MPI']['TIP_INDICATOR']
-        //             ]
-        //         ];
-        //         break;
-        //     case '8':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT'],
-        //                 "FEE_AMOUNT" => $request->param['MPI']['FEE_AMOUNT']
-        //             ]
-        //         ];
-        //         break;
-        //     case '9':
-        //         $data = [
-        //             "MPI" => [
-        //                 "MERCHANT_ID" => $request->param['MPI']['MERCHANT_ID'],
-        //                 "AMOUNT" => $request->param['MPI']['AMOUNT'],
-        //                 "FEE_AMOUNT_PERCENTAGE" => $request->param['MPI']['FEE_AMOUNT_PERCENTAGE']
-        //             ]
-        //         ];
-        //         break;
-        //     default:
-        //         $data = [];
-        //         break;
-        // }
 
         Log::channel('apilog')->info('REQ SEND API : ' . json_encode($data));
 
         try {
+
+            $customApiBaseUrl = env('API_URL');
+            
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post('http://192.168.26.26:9800/v1/api/aquerier/create/qr', $data);
+            ])->post(
+            $customApiBaseUrl . '/v1/api/aquerier/create/qr', $data);
 
             Log::channel('apilog')->info('RESP SEND API : ' . json_encode($response->json()));
 
