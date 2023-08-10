@@ -48,7 +48,8 @@ Route::group(['middleware' => ['cors']], function () {
         Route::get('/merchants', 'API\client\MerchantClientController@apiIndex')->name('api.merchant.index');  
         Route::post('/merchants/store', 'API\client\MerchantClientController@apiStore')->name('api.merchant.store');  
         Route::post('/qris/get', 'API\client\QrisClientController@get')->name('api.qris.get');  
-        Route::post('/refund/get', 'API\client\RefundClientController@get')->name('api.refund.get');  
+        Route::post('/refund/hit', 'API\client\RefundClientController@get')->name('api.refund.hit');  
+        Route::post('/transaction/get', 'API\client\TransactionClientController@index')->name('api.transaction.get');  
 
     });
 
