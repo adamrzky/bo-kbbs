@@ -25,9 +25,9 @@ class MerchantClientController extends Controller
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->select('QRIS_MERCHANT.*');
 
-        if ($userId !== null && $userId != 1) {
-            $query->where('users.id', $userId);
-        }
+        // if ($userId !== null && $userId != 1) {
+        //     $query->where('users.id', $userId);
+        // }
 
         $merchants = $query->get();
 
