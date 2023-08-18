@@ -34,7 +34,7 @@ Route::post('/detail_qris', 'API\QrisController@detailQris')->name('detail_qris'
 // Route::get('/getLokasi', 'API\GetLokasiController@getLokasi')->name('getLokasi');
 Route::get('/getLokasi/{provinsi}', 'API\GetLokasiController@getLokasi')->name('getLokasi');
 
-Route::group(['middleware' => ['auth.basic']], function () {
+Route::group(['middleware' => ['cors']], function () {
     //
     Route::post('/register', 'API\AuthController@register');
     Route::post('/gettoken', 'API\AuthController@getToken')->name('gettoken');
