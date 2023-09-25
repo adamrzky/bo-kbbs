@@ -10,7 +10,7 @@ class GetLokasiController extends Controller
 {
     public function getLokasi(Request $request, $provinsi)
     {
-        $url = 'http://192.168.26.26:10002/api.php?negara=ID&prov=' . $provinsi;
+        $url = 'http://103.182.72.16:10002/api.php?negara=ID&prov=' . $provinsi;
         
         $response = Http::get($url);
         
