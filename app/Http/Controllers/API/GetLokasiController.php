@@ -10,8 +10,9 @@ class GetLokasiController extends Controller
 {
     public function getLokasi(Request $request, $provinsi)
     {
-        $url = 'http://103.182.72.16:10002/api.php?negara=ID&prov=' . $provinsi;
-         
+        $url = env('GETLOKASI');
+        // $getLokasi = 'http://182.23.93.76:10002/api.php?negara=ID&prov=' . $provinsi;
+        
         $response = Http::get($url);
         
         // Check if the request was successful
