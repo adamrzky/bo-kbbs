@@ -20,18 +20,14 @@ class MerchantClientController extends Controller
         $getUserId = Auth::id();
         $userId = $getUserId;
 
-        $query = DB::table('QRIS_MERCHANT')
-            ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
-            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-            ->select('QRIS_MERCHANT.*');
 
-        if ($userId !== null && $userId != 1) {
-            $query->where('users.id', $userId);
-        }
+        $merchant = Merchant::latest();
 
-        $merchants = $query->get();
+        $merchants = $merchant->get();
 
         return response()->json(['merchants' => $merchants]);
+
+     
     }
 
     public function apiStore(Request $request)
