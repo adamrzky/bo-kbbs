@@ -105,7 +105,7 @@ class MerchantClientController extends Controller
                 'MERCHANT_DETAIL' => $data_detail,
             ];
 
-            // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
+            $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
 
             return response()->json(['message' => 'Merchant created successfully']);
         } catch (\Throwable $th) {

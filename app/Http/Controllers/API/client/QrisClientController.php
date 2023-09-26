@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API\client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,8 +19,8 @@ class QrisClientController extends Controller
 {
 public function get(Request $request)
     {
-        // Log::channel('apilog')->info('==============================');
-        // Log::channel('apilog')->info('REQ : ' . json_encode($request->all()));
+        Log::channel('apiclient')->info('==============================');
+        Log::channel('apiclient')->info('REQ : ' . json_encode($request->all()));
         $mpi = [];
 
         foreach ($request->param['MPI'] as $key => $value) {
@@ -36,7 +36,7 @@ public function get(Request $request)
         ];
 
 
-        // Log::channel('apilog')->info('REQ SEND API : ' . json_encode($data));
+        Log::channel('apiclient')->info('REQ SEND API : ' . json_encode($data));
 
         try {
 
@@ -50,17 +50,17 @@ public function get(Request $request)
 
             
 
-            // Log::channel('apilog')->info('RESP SEND API : ' . json_encode($response->json()));
+            Log::channel('apiclient')->info('RESP SEND API : ' . json_encode($response->json()));
 
             $res = $response->json();
 
         } catch (\Throwable $th) {
-            // Log::channel('apilog')->info('RESP SEND API : ' . $th->getMessage());
+            Log::channel('apiclient')->info('RESP SEND API : ' . $th->getMessage());
             $res = [
                 'RC' => '0005',
                 'RM' => $th->getMessage(),
             ];
-            // Log::channel('apilog')->info('RESP : ' . json_encode($res));
+            Log::channel('apiclient')->info('RESP : ' . json_encode($res));
         }
 
         return response()->json($res);

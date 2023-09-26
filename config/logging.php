@@ -111,6 +111,11 @@ return [
             'path' => storage_path('logs/'.date('Y-m-d').'-web.log'),
             'level' => 'info',
         ],
+        'apiclient' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/'.date('Y-m-d').'-apiclient.log'),
+            'level' => 'info',
+        ],
     ],
 
 ];

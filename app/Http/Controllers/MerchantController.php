@@ -165,7 +165,7 @@ class MerchantController extends Controller
 
            
             
-            // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
+            $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
 
             return redirect()
                 ->route('merchant.index')
@@ -290,7 +290,7 @@ class MerchantController extends Controller
 
         // dd($request->merchant);
         
-        // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
+        $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
 
         return redirect()
             ->route('merchant.index')
