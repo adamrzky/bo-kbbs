@@ -112,11 +112,13 @@ class RefundController extends Controller
         // dd($data);
         $user = $request->user();
 
+        $baseurl = ENV('BASE_URL');
+
         $token = Http::timeout(5)->withHeaders([
             'Content-Type' => 'application/json',
             'Access-Control-Allow-Origin' => '*',
         ])->post(
-            'http://127.0.0.1:4080/api/gettoken',
+            $baseurl . '/api/gettoken',
             [
                 "email" => $user->email,
                 "password" => $user->getAuthPassword()
@@ -128,7 +130,7 @@ class RefundController extends Controller
             'Authorization' => 'Bearer ' .$resptoken['access_token'] ,
             'Content-Type' => 'application/json',
         ])->post(
-            'http://127.0.0.1:4080/api/refund',
+            $baseurl . '/api/refund',
             $data
         );
         
