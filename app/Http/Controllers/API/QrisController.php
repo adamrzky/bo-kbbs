@@ -72,6 +72,8 @@ class QrisController extends Controller
                 $qris = $res['MPO']['QRIS'];
                 $detailQris = $this->parsingQrCodeASPI($qris);
 
+                // dd($detailQris);
+
                 $nmid = $res['MPO']['NMID'];
                 $merchantName = $detailQris['59'];
 
