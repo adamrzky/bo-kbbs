@@ -1,6 +1,8 @@
 /node_modules
 /public/hot
 /public/images/hasil.png
+public/images/hasil.png
+/public\images\hasil.png
 /public/storage
 /storage/*.key
 /vendor
