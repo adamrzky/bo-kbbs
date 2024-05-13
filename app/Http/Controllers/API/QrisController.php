@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Intervention\Image\ImageManager;
 use Image;
+use Carbon;
+
 
 class QrisController extends Controller
 {
@@ -31,7 +33,7 @@ class QrisController extends Controller
         Log::channel('apilog')->info('==============================');
         Log::channel('apilog')->info('REQ : ' . json_encode($request->all()));
         $mpi = [];
-    
+
         foreach ($request->param['MPI'] as $key => $value) {
             if (!is_null($value)) {
                 $mpi[$key] = $value;
@@ -41,31 +43,33 @@ class QrisController extends Controller
         $data = [
             'MPI' => $mpi,
         ];
-    
+
         // Load background image
-        $backgroundImage = Image::make('images/gpn.jpg');
+        $backgroundImage = Image::make('images/gpnPolos.jpg');
         // Resize background image to match canvas size
         $backgroundImage->resize(400, 600);
-    
+
         // Create canvas
         $canvas = Image::canvas(400, 600, '#ffff');
-    
+
         // Insert background image to canvas
         $canvas->insert($backgroundImage, 'top-left', 0, 0);
-    
+
         Log::channel('apilog')->info('REQ SEND API : ' . json_encode($data));
-    
+
         try {
-    
+
             $customApiBaseUrl = env('API_URL');
-            
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post(
-                $customApiBaseUrl . '/v1/api/aquerier/create/qr', $data);
-    
+                $customApiBaseUrl . '/v1/api/aquerier/create/qr',
+                $data
+            );
+
             Log::channel('apilog')->info('RESP SEND API : ' . json_encode($response->json()));
-    
+
             $res = $response->json();
             if ($res['RC'] == '0000') {
 
@@ -76,58 +80,97 @@ class QrisController extends Controller
 
                 $nmid = $res['MPO']['NMID'];
                 $merchantName = $detailQris['59'];
+                $terminal = $detailQris['62']['7'];
+                $dateNow = date('d.m.y');
 
 
-    
+
                 $qrcode = base64_encode(
                     QrCode::format('png')
-                        ->size(250)
+                        ->size(230)
                         ->generate($qris)
                 );
-    
+
                 //qrispng
                 $wmQris = Image::make('images/qris.png');
                 $wmQris->resize(200, 70);
-    
+
                 // Insert QR code onto canvas
                 // $canvas->insert($wmQris, 'top', 10, 10);
-    
+
                 // Generate QR code and insert onto canvas
                 $qrcodeImage = Image::make($qrcode);
                 $canvas->insert($qrcodeImage, 'center', 0, 20);
-    
-               // Insert Merchant Name text onto canvas
+
+                // Insert Merchant Name text onto canvas
                 $paddingTop = 110; // Padding dari atas canvas
                 $textHeight = 12; // Tinggi teks dalam font
                 $yCoordinate = $paddingTop + $textHeight; // Koordinat y yang dihitung
                 $canvas->text($merchantName, $canvas->width() / 2, $yCoordinate, function ($font) {
-                    $font->file(storage_path('font/font3.ttf'));
+                    $font->file(storage_path('font/gpn-sans-black.otf'));
                     $font->size(15);
                     $font->align('center');
                 });
-    
-               // Insert NMID text onto canvas
-                $paddingTop2 = 140; // Padding dari atas canvas
+
+                // Insert NMID text onto canvas
+                $paddingTop2 = 135; // Padding dari atas canvas
                 $textHeight2 = 12; // Tinggi teks dalam font
                 $yCoordinate2 = $paddingTop2 + $textHeight2; // Koordinat y yang dihitung
                 $canvas->text('NMID : ' . $nmid, $canvas->width() / 2, $yCoordinate2, function ($font) {
-                    $font->file(storage_path('font/font3.ttf'));
+                    $font->file(storage_path('font/gpn-sans-regular.otf'));
+                    $font->size(15);
+                    $font->align('center');
+                });
+
+                // Insert terminal text onto canvas
+                $paddingTop2 = 160; // Padding dari atas canvas
+                $textHeight2 = 12; // Tinggi teks dalam font
+                $yCoordinate2 = $paddingTop2 + $textHeight2; // Koordinat y yang dihitung
+                $canvas->text($terminal, $canvas->width() / 2, $yCoordinate2, function ($font) {
+                    $font->file(storage_path('font/gpn-sans-regular.otf'));
                     $font->size(15);
                     $font->align('center');
                 });
 
 
-    
+
+                //Dicetak Oleh: 93600441
+                $paddingTop2 = 550; // Padding dari atas canvas
+                $textHeight2 = 8; // Tinggi teks dalam font
+                $yCoordinate2 = $paddingTop2 + $textHeight2; // Koordinat y yang dihitung
+                $xCoordinate2 = 30; // Koordinat x yang dihitung, disesuaikan dengan kebutuhan Anda
+
+                $canvas->text('Dicetak oleh: 93600521', $xCoordinate2, $yCoordinate2, function ($font) {
+                    $font->file(storage_path('font/gpn-sans-regular.otf'));
+                    $font->size(12);
+                    $font->align('left');
+                });
+
+
+                //Versi CETAK
+                $paddingTop2 = 565; // Padding dari atas canvas
+                $textHeight2 = 8; // Tinggi teks dalam font
+                $yCoordinate2 = $paddingTop2 + $textHeight2; // Koordinat y yang dihitung
+                $xCoordinate2 = 30; // Koordinat x yang dihitung, disesuaikan dengan kebutuhan Anda
+
+                $canvas->text('Versi cetak: 1.0.' . $dateNow, $xCoordinate2, $yCoordinate2, function ($font) {
+                    $font->file(storage_path('font/gpn-sans-regular.otf'));
+                    $font->size(12);
+                    $font->align('left');
+                });
+
+
+
                 // Save the canvas as PNG
                 $canvas->save('images/hasil.png');
-    
+
                 // Encode the canvas as base64 if needed
                 $base64 = base64_encode($canvas);
-    
+
                 $detail = $this->parsingQrCodeASPI($qris);
                 $res['MPO']['DETAIL'] = $detail;
                 $res['MPO']['QR'] = $base64;
-    
+
                 Log::channel('apilog')->info('RESP : ' . json_encode($res));
             } else {
                 $res = $response->json();
@@ -141,10 +184,10 @@ class QrisController extends Controller
             ];
             Log::channel('apilog')->info('RESP : ' . json_encode($res));
         }
-    
+
         return response()->json($res);
     }
-    
+
 
 
 

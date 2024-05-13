@@ -97,6 +97,7 @@
                         <div class="col-xs-12 col-sm-12 col-md-12 text-center card-footer d-flex justify-content-between">
                         <!-- Tombol Submit -->
                         <button type="button" class="btn btn-success" id="store">Submit</button>
+                        <button type="submit" class="btn btn-success" id="store">sumbit</button>
                     
                         
                         <div id="loading" style="display: none;">
