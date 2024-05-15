@@ -35,41 +35,48 @@ class RefundController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
-        // $data = Transaction::get()->toArray();
-        $getUserId = Auth::id();
-        $userId = $getUserId;
-        
-        $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
-            ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
-            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-            ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
-        
-        if ($userId != 1) {
-            $query->where('users.id', $userId);
-        }
-        
-        $datas = $query->get()->toArray();
+{
+    $datas = [];
+    switch (env('APP_ENV')) {
+        case 'local':
+            $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
+            break;
+        case 'dev':
+            $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
+            break;
+        case 'prod':
+            $userId = Auth::id();
 
-        $data = []; // Membuat array kosong
-        
-        foreach ($datas as $item) {
-            $data[] = (array) $item; // Mengubah objek menjadi array asosiatif
-        }
-        
-        $amount = null; // Nilai default jika $amount null
-        
-        foreach ($data as $p) {
-            if ($p['AMOUNT'] !== null) {
-                $amount = $p['AMOUNT'];
-                break; // Keluar dari loop jika $amount sudah ditemukan
-            }
-        }
-        
-        return view('refund.index', compact('data', 'amount'));
-        
+            $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+                ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+                ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+                ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+
+                if ($userId != 1) {
+                    $query->where('users.id', $userId);
+                }
+                $datas = $query->get()->toArray();
+            break;
     }
+
+   
+    
+    $data = []; // Membuat array kosong
+    foreach ($datas as $item) {
+        $data[] = (array) $item; // Mengubah objek menjadi array asosiatif
+    }
+
+    $amount = null; // Nilai default jika $amount null
+    foreach ($data as $p) {
+        if ($p['AMOUNT'] !== null) {
+            $amount = $p['AMOUNT'];
+            break; // Keluar dari loop jika $amount sudah ditemukan
+        }
+    }
+
+    return view('refund.index', compact('data', 'amount'));
+}
+
 
     /**
      * Store a newly created resource in storage.
