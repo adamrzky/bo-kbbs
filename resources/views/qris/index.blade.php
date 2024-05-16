@@ -58,10 +58,10 @@
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>QR Type :</label>
-                                <select class="form-control select2" name="TYPE" id="TYPE" required
+                                <select class="form-control select" name="TYPE" id="TYPE" required
                                     onchange="checkQRType()">
-                                    <option value="STATIS">STATIS</option>
                                     <option value="DINAMIS">DINAMIS</option>
+                                    <option value="STATIS">STATIS</option>
                                 </select>
                             </div>
                             <div class="form-group col-6">
@@ -76,8 +76,7 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>AMOUNT:</label>
-                                <input type="number" id="AMOUNT" name="AMOUNT" class="form-control" min="10000"
-                                    max="1000000">
+                                <input type="text" id="AMOUNT" name="AMOUNT" class="form-control" placeholder="Min 10.000">
                             </div>
                             <div class="form-group col-6">
                                 <label>TIP_INDICATOR:</label>
@@ -94,19 +93,19 @@
                         </div>
                     </div>
                     {{-- <div class=" col-xs-12 col-sm-12 col-md-12 text-center card-footer d-flex justify-content-between align-items-center  "> --}}
-                        <div class="col-xs-12 col-sm-12 col-md-12 text-center card-footer d-flex justify-content-between">
+                    <div class="col-xs-12 col-sm-12 col-md-12 text-center card-footer d-flex justify-content-between">
                         <!-- Tombol Submit -->
                         <button type="button" class="btn btn-success" id="store">Submit</button>
                         {{-- <button type="submit" class="btn btn-success" id="store">sumbit</button> --}}
-                    
-                        
+
+
                         <div id="loading" style="display: none;">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">Loading...</span>
                             </div>
                         </div>
                     </div>
-                    
+
                 </form>
             </div>
         </div>
@@ -150,7 +149,7 @@
             var qrType = document.getElementById("TYPE").value;
             var amountInput = document.getElementById("AMOUNT");
 
-            if (qrType === "DINAMIS") {
+            if (qrType === "STATIS") {
                 amountInput.disabled = true;
             } else {
                 amountInput.disabled = false;
@@ -240,5 +239,6 @@
             alert('QR berhasil diunduh.');
         });
     </script>
+    
 
 @endsection

@@ -367,10 +367,16 @@
                         data: 'RETRIEVAL_REFERENCE_NUMBER'
                     },
                     {
-                        data: 'AMOUNT'
+                        data: 'AMOUNT',
+                        render: function(data, type, row) {
+                            return new Intl.NumberFormat('id-ID').format(data);
+                        }
                     },
                     {
-                        data: 'AMOUNT_REFUND'
+                        data: 'AMOUNT_REFUND',
+                        render: function(data, type, row) {
+                            return new Intl.NumberFormat('id-ID').format(data);
+                        }
                     },
                     {
                         data: 'QR_TYPE',
@@ -430,6 +436,10 @@
 
         });
 
+        function formatNumberWithThousandSeparator(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
         function showDetail(id) {
             // Get the button element
             var button = event.target;
@@ -458,7 +468,7 @@
                     $('#ID').val(data.ID);
                     $('#INVOICE_NUMBER').val(data.INVOICE_NUMBER);
                     $('#RETRIEVAL_REFERENCE_NUMBER').val(data.RETRIEVAL_REFERENCE_NUMBER);
-                    $('#AMOUNT').val(data.AMOUNT);
+                    $('#AMOUNT').val(formatNumberWithThousandSeparator(data.AMOUNT));
                     $('#MERCHANT_ID').val(data.MERCHANT_ID);
                     $('#MERCHANT_NAME').val(data.MERCHANT['MERCHANT_NAME']);
                     $('#POSTAL_CODE').val(data.MERCHANT['POSTAL_CODE']);
@@ -495,7 +505,7 @@
                     $('#ID').val(data.ID);
                     $('#CREATED_AT_TRX').val(data.CREATED_AT);
                     $('#RETRIEVAL_REFERENCE_NUMBER_TRX').val(data.RETRIEVAL_REFERENCE_NUMBER);
-                    $('#AMOUNT_TRX').val(data.AMOUNT);
+                    $('#AMOUNT_TRX').val(formatNumberWithThousandSeparator(data.AMOUNT));
                     $('#ACQUIRING_INSTITUTION_NAME_TRX').val(data.ACQUIRING_INSTITUTION_NAME);
                     $('#ISSUING_INSTITUTION_NAME_TRX').val(data.NNS);
                     $('#ISSUING_CUSTOMER_NAME_TRX').val(data.ISSUING_CUSTOMER_NAME);

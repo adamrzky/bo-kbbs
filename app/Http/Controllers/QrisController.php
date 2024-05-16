@@ -58,6 +58,7 @@ class QrisController extends Controller
     public function hit(Request $request)
     {
 
+        date_default_timezone_set('Asia/Jakarta');
         // dd($request['qrType']);
         // Log::channel('weblog')->info('req : ' . $request);
         $exp = null;
@@ -81,6 +82,8 @@ class QrisController extends Controller
                 ]
             ]
         ];
+
+        // dd($data);
 
         Log::channel('weblog')->info('REQ SEND : ' .  json_encode($data));
 
