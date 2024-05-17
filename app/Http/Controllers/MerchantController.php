@@ -340,4 +340,31 @@ class MerchantController extends Controller
             ]);
         }
     }
+
+    public function categories()
+    {
+      
+        $mcc = Mcc::orderBy('DESC_MCC')
+        ->get();
+        // ->toArray();
+
+       
+
+        // $merchants = $mcc->paginate(5); // Specify the number of items per page (e.g., 5)
+
+        return view('merchant.categories', ['mcc' => $mcc]);
+                
+        
+    }
+
+    public function categoriesCreate()
+    {
+        // $mcc = Mcc::orderBy('DESC_MCC')
+        //     ->get()
+        //     ->toArray();
+        // $criteria = getCriteria();
+        // $prov = getWilayah();
+
+        return view('merchant.categoriesCreate');
+    }
 }

@@ -77,6 +77,8 @@ Route::group(['middleware' => ['auth']], function() {
 
     //Merchant
     Route::get('/merchant', 'MerchantController@index')->name('merchant.index');
+    Route::get('/merchantCategories', 'MerchantController@categories')->name('merchant.categories');
+    Route::get('/merchantCategories', 'MerchantController@categoriesCreate')->name('merchant.categoriesCreate');
     Route::get('/merchant/show/{id}', 'MerchantController@show')->name('merchant.show');
     Route::get('/merchant/{id}/edit', 'MerchantController@edit')->name('merchant.edit');
     Route::get('/merchant/create', 'MerchantController@create')->name('merchant.create');

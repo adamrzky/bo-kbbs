@@ -339,19 +339,31 @@ return [
         // ['header' => 'test'],
        
         [
-            'text' => 'Create Merchant',
-            'url'  => 'merchant',
+            'text' => 'Merchant Management',
+          
             'icon' => 'fas fa-fw fa-share',
+            'submenu' => [
+                [
+                    'text' => 'Manage Merchant',
+                    'url'  => 'merchant',
+                ],
+                [
+                    'text' => 'Manage Categories',
+                    'url'  => 'merchantCategories',
+                ],
+              
+              
+            ],
         ],
         [
             'text' => 'Generate QRIS',
             'url'  => 'qris',
-            'icon' => 'fas fa-fw fa-lock',
+            'icon' => 'fas fa-fw fa-share',
         ],
         [
             'text' => 'Refund',
             'url'  => 'refund',
-            'icon' => 'fas fa-fw fa-check',
+            'icon' => 'fas fa-fw fa-share',
         ],
         [
             'text' => 'Transaction',
