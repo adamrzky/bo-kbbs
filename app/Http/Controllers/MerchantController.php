@@ -37,7 +37,7 @@ class MerchantController extends Controller
 
     public function index()
     {
-      
+
         $getUserId = Auth::id();
         $userId = $getUserId;
 
@@ -53,8 +53,6 @@ class MerchantController extends Controller
         $merchants = $query->paginate(5); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.index', ['merchants' => $merchants]);
-                
-        
     }
 
     /**
@@ -81,128 +79,137 @@ class MerchantController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request);
-        request()->validate([
-            'norek' => 'required|numeric',
-            'merchant' => 'required',
-            'mcc' => 'required',
-            'criteria' => 'required',
-            'prov' => 'required',
-            'city' => 'required',
-            'address' => 'required',
-            'postalcode' => 'required',
-            'fee' => 'required',
-        ]);
 
-        $cek = $this->cekNorek($request->norek);
-        if ($cek['rc'] != '0000') {
-            return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-        }
+        if ($request['merchantType']) {
 
-        try {
-            $date = date('Y-m-d H:i:s');
-            $nmid = 'ID' . genID(13);
-            $nns = '93600521';
-            $domain = 'ID.CO.QRIS.WWW';
-            $data_domestic = [
-                'REVERSE_DOMAIN' => $domain,
-                'NMID' => $nmid,
-                'MCC' => $request->mcc,
-                'CRITERIA' => $request->criteria,
-            ];
-            $id_domestic = MerchantDomestic::create($data_domestic)->id;
+            // dd($request);
 
-            $data_merchant = [
-                'CREATED_AT' => $date,
-                'UPDATED_AT' => '',
-                'TERMINAL_LABEL' => 'K19',
-                'MERCHANT_COUNTRY' => 'ID',
-                'QRIS_MERCHANT_DOMESTIC_ID' => $id_domestic,
-                'TYPE_QR' => 'STATIS',
-                'MERCHANT_NAME' => $request->merchant,
-                'MERCHANT_CITY' => $request->city,
-                'POSTAL_CODE' => $request->postalcode,
-                'MERCHANT_CURRENCY_CODE' => '360',
-                'MERCHANT_TYPE' => $request->mcc,
-                'MERCHANT_EXP' => '900',
-                'MERCHANT_CODE' => genID(5, true),
-                'MERCHANT_ADDRESS' => $request->address,
-                'STATUS' => '1',
-                'NMID' => $nmid,
-                'ACCOUNT_NUMBER' => $request->norek,
-            ];
+            try {
+                $data_merchant = [
 
-            $merchants = Merchant::create($data_merchant);
+                    'CODE_MCC' => $request->code,
+                    'DESC_MCC' => $request->desc,
 
-            $merchant_id = $merchants->ID;
+                ];
 
-            $data_user_has_merchant = [
+                $mcc = Mcc::create($data_merchant);
 
-                'USER_ID' => Auth::id(),
-                'MERCHANT_ID' =>  $merchant_id,
-            ];
+                return redirect()
+                    ->route('merchant.categories')
+                    ->with(['msg' => 'MCC created successfully.']);
+            } catch (\Throwable $th) {
+                return back()->withErrors(['msg' => 'Merchant created failed. (' . $th->getMessage() . ')']);
+            }
+        } else {
+
+            request()->validate([
+                'norek' => 'required|numeric',
+                'merchant' => 'required',
+                'mcc' => 'required',
+                'criteria' => 'required',
+                'prov' => 'required',
+                'city' => 'required',
+                'address' => 'required',
+                'postalcode' => 'required',
+                'fee' => 'required',
+            ]);
+
+            $cek = $this->cekNorek($request->norek);
+            if ($cek['rc'] != '0000') {
+                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            }
+
+            try {
+                $date = date('Y-m-d H:i:s');
+                $nmid = 'ID' . genID(13);
+                $nns = '93600521';
+                $domain = 'ID.CO.QRIS.WWW';
+                $data_domestic = [
+                    'REVERSE_DOMAIN' => $domain,
+                    'NMID' => $nmid,
+                    'MCC' => $request->mcc,
+                    'CRITERIA' => $request->criteria,
+                ];
+                $id_domestic = MerchantDomestic::create($data_domestic)->id;
+
+                $data_merchant = [
+                    'CREATED_AT' => $date,
+                    'UPDATED_AT' => '',
+                    'TERMINAL_LABEL' => 'K19',
+                    'MERCHANT_COUNTRY' => 'ID',
+                    'QRIS_MERCHANT_DOMESTIC_ID' => $id_domestic,
+                    'TYPE_QR' => 'STATIS',
+                    'MERCHANT_NAME' => $request->merchant,
+                    'MERCHANT_CITY' => $request->city,
+                    'POSTAL_CODE' => $request->postalcode,
+                    'MERCHANT_CURRENCY_CODE' => '360',
+                    'MERCHANT_TYPE' => $request->mcc,
+                    'MERCHANT_EXP' => '900',
+                    'MERCHANT_CODE' => genID(5, true),
+                    'MERCHANT_ADDRESS' => $request->address,
+                    'STATUS' => '1',
+                    'NMID' => $nmid,
+                    'ACCOUNT_NUMBER' => $request->norek,
+                ];
+
+                $merchants = Merchant::create($data_merchant);
+
+                $merchant_id = $merchants->ID;
+
+                $data_user_has_merchant = [
+
+                    'USER_ID' => Auth::id(),
+                    'MERCHANT_ID' =>  $merchant_id,
+                ];
 
 
-            $user_has_merchant = UserMerchant::create($data_user_has_merchant);
+                $user_has_merchant = UserMerchant::create($data_user_has_merchant);
 
-            $data_detail = [
-                'MERCHANT_ID' => $merchant_id,
-                'DOMAIN' => $domain,
-                'TAG' => '26',
-                'MPAN' => $nns . $request->norek,
-                'MID' => $nmid,
-                'CRITERIA' => $request->criteria,
-            ];
-            $merchant_detail = MerchantDetails::create($data_detail);
+                $data_detail = [
+                    'MERCHANT_ID' => $merchant_id,
+                    'DOMAIN' => $domain,
+                    'TAG' => '26',
+                    'MPAN' => $nns . $request->norek,
+                    'MID' => $nmid,
+                    'CRITERIA' => $request->criteria,
+                ];
+                $merchant_detail = MerchantDetails::create($data_detail);
 
 
 
-            $param = [
-                'MERCHANT_DOMESTIC' => $data_domestic,
-                'MERCHANT' => $data_merchant,
-                'MERCHANT_DETAIL' => $data_detail,
-            ];
+                $param = [
+                    'MERCHANT_DOMESTIC' => $data_domestic,
+                    'MERCHANT' => $data_merchant,
+                    'MERCHANT_DETAIL' => $data_detail,
+                ];
 
-           
-            
-            $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
 
-            return redirect()
-                ->route('merchant.index')
-                ->with(['msg' => 'Merchant created successfully.']);
-        } catch (\Throwable $th) {
-            return back()->withErrors(['msg' => 'Merchant created failed. (' . $th->getMessage() . ')']);
+
+                $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
+
+                return redirect()
+                    ->route('merchant.index')
+                    ->with(['msg' => 'Merchant created successfully.']);
+            } catch (\Throwable $th) {
+                return back()->withErrors(['msg' => 'Merchant created failed. (' . $th->getMessage() . ')']);
+            }
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Merchant  $merchant
-     * @return \Illuminate\Http\Response
-     */
+
     public function show(Merchant $merchant, $id)
     {
         $id = Crypt::decrypt($id);
-        
+
         $mcc = Mcc::orderBy('DESC_MCC')
             ->get()
             ->toArray();
         $criteria = getCriteria();
         $merchant = Merchant::where('id', $id)->first();
-        return view('merchant.show', compact('mcc','criteria','merchant'));
+        return view('merchant.show', compact('mcc', 'criteria', 'merchant'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Merchant  $merchant
-     * @return \Illuminate\Http\Response
-     */
-    // public function edit(Merchant $merchant)
-    // {
-    //     return view('merchants.edit',compact('merchant'));
-    // }
+
     public function edit(Merchant $merchant, $id)
     {
         $id = Crypt::decrypt($id);
@@ -217,84 +224,120 @@ class MerchantController extends Controller
      * @param  \App\Merchant  $merchant
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Merchant $merchant)
+    public function update(Request $request, Merchant $merchant, Mcc $mcc)
     {
-        $data_merchant = [
-            'ID' => 'required',
-            'TERMINAL_LABEL' => 'required',
-            'MERCHANT_COUNTRY' => 'required',
-            'QRIS_MERCHANT_DOMESTIC_ID' => 'required',
-            'TYPE_QR' => 'required',
-            'MERCHANT_NAME' => 'required',
-            'MERCHANT_CITY' => 'required',
-            'POSTAL_CODE' => 'required',
-            'MERCHANT_CURRENCY_CODE' => 'required',
-            'MERCHANT_TYPE' => 'required',
-            'ACCOUNT_NUMBER' => 'required',
-            'STATUS' => 'required',
-            'MERCHANT_CODE' => 'required',
-            'MERCHANT_ADDRESS' => 'required',
-        ];
-        
+
         // dd($request);
-        $validatedData = $request->validate($data_merchant);
-        // $merchant = Merchant::findOrFail($id);
-        $merchant->update($validatedData);
-
-        // $merchant->update($request->all());
 
 
-        // $data_detail = [
-        //     'MERCHANT_ID' => $merchant_id,
-        //     'DOMAIN' => $domain,
-        //     'TAG' => '26',
-        //     'MPAN' => $nns . $request->norek,
-        //     'MID' => $nmid,
-        //     'CRITERIA' => $request->criteria,
-        // ];
-        // $merchant_detail = MerchantDetails::create($data_detail);
+        if ($request->has('merchantType')) {
+            try {
+                // Validasi data yang diperlukan
+                $data_merchant = $request->validate([
+                    'ID' => 'required|integer',
+                    'CODE_MCC' => 'required|string|max:4',
+                    'DESC_MCC' => 'required|string|max:255',
+                ]);
 
-        $date = date('Y-m-d H:i:s');
-        $nmid = 'ID' . genID(13);
-        $nns = '93600521';
-        $domain = 'ID.CO.QRIS.WWW';
-  
+                // Ambil objek MCC yang akan di-update
+                $mcc = Mcc::find($data_merchant['ID']);
 
-        $val_merchant = [
-            'ID' => $request->merchant->ID,
-            'UPDATED_AT' => $date,
-            'TERMINAL_LABEL' => $request->merchant->TERMINAL_LABEL,
-            'MERCHANT_COUNTRY' => 'ID',
-            // 'QRIS_MERCHANT_DOMESTIC' => '',
-            'TYPE_QR' => $request->merchant->TYPE_QR,
-            'MERCHANT_NAME' => $request->merchant->MERCHANT_NAME,
-            'MERCHANT_CITY' => $request->merchant->MERCHANT_CITY,
-            'POSTAL_CODE' => $request->merchant->POSTAL_CODE,
-            'MERCHANT_CURRENCY_CODE' => $request->merchant->MERCHANT_CURRENCY_CODE,
-            'MERCHANT_TYPE' => $request->merchant->MERCHANT_TYPE,
-            'MERCHANT_EXP' => $request->merchant->MERCHANT_EXP,
-            'MERCHANT_CODE' => '900',
-            'MERCHANT_ADDRESS' => $request->merchant->MERCHANT_ADDRESS,
-            'STATUS' => $request->merchant->STATUS,
-            'NMID' => $request->merchant->NMID,
-            'ACCOUNT_NUMBER' => $request->merchant->ACCOUNT_NUMBER,
-        ];
+                // Periksa apakah objek MCC ditemukan
+                if ($mcc) {
+                    // Update data MCC dengan data yang sudah divalidasi
+                    $mcc->update($data_merchant);
 
-        $param = [
-           
-            'MERCHANT' => $val_merchant
-           
-        ];
-        // json_encode($param);
-        // dd(json_encode($param));
-
-        // dd($request->merchant);
+                    // Redirect ke route 'merchant.categories' dengan pesan sukses
+                    return redirect()
+                        ->route('merchant.categories')
+                        ->with('msg', 'Merchant updated successfully.');
+                } else {
+                    return back()->withErrors(['msg' => 'Merchant not found.']);
+                }
+            } catch (\Throwable $th) {
+                // Kembali ke halaman sebelumnya dengan pesan error
+                return back()->withErrors(['msg' => 'Merchant update failed. (' . $th->getMessage() . ')']);
+            }
         
-        $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
+    } else {
 
-        return redirect()
-            ->route('merchant.index')
-            ->with('success', 'Merchant updated successfully');
+            $data_merchant = [
+                'ID' => 'required',
+                'TERMINAL_LABEL' => 'required',
+                'MERCHANT_COUNTRY' => 'required',
+                'QRIS_MERCHANT_DOMESTIC_ID' => 'required',
+                'TYPE_QR' => 'required',
+                'MERCHANT_NAME' => 'required',
+                'MERCHANT_CITY' => 'required',
+                'POSTAL_CODE' => 'required',
+                'MERCHANT_CURRENCY_CODE' => 'required',
+                'MERCHANT_TYPE' => 'required',
+                'ACCOUNT_NUMBER' => 'required',
+                'STATUS' => 'required',
+                'MERCHANT_CODE' => 'required',
+                'MERCHANT_ADDRESS' => 'required',
+            ];
+
+            // dd($request);
+            $validatedData = $request->validate($data_merchant);
+            // $merchant = Merchant::findOrFail($id);
+            $merchant->update($validatedData);
+
+            // $merchant->update($request->all());
+
+
+            // $data_detail = [
+            //     'MERCHANT_ID' => $merchant_id,
+            //     'DOMAIN' => $domain,
+            //     'TAG' => '26',
+            //     'MPAN' => $nns . $request->norek,
+            //     'MID' => $nmid,
+            //     'CRITERIA' => $request->criteria,
+            // ];
+            // $merchant_detail = MerchantDetails::create($data_detail);
+
+            $date = date('Y-m-d H:i:s');
+            $nmid = 'ID' . genID(13);
+            $nns = '93600521';
+            $domain = 'ID.CO.QRIS.WWW';
+
+
+            $val_merchant = [
+                'ID' => $request->merchant->ID,
+                'UPDATED_AT' => $date,
+                'TERMINAL_LABEL' => $request->merchant->TERMINAL_LABEL,
+                'MERCHANT_COUNTRY' => 'ID',
+                // 'QRIS_MERCHANT_DOMESTIC' => '',
+                'TYPE_QR' => $request->merchant->TYPE_QR,
+                'MERCHANT_NAME' => $request->merchant->MERCHANT_NAME,
+                'MERCHANT_CITY' => $request->merchant->MERCHANT_CITY,
+                'POSTAL_CODE' => $request->merchant->POSTAL_CODE,
+                'MERCHANT_CURRENCY_CODE' => $request->merchant->MERCHANT_CURRENCY_CODE,
+                'MERCHANT_TYPE' => $request->merchant->MERCHANT_TYPE,
+                'MERCHANT_EXP' => $request->merchant->MERCHANT_EXP,
+                'MERCHANT_CODE' => '900',
+                'MERCHANT_ADDRESS' => $request->merchant->MERCHANT_ADDRESS,
+                'STATUS' => $request->merchant->STATUS,
+                'NMID' => $request->merchant->NMID,
+                'ACCOUNT_NUMBER' => $request->merchant->ACCOUNT_NUMBER,
+            ];
+
+            $param = [
+
+                'MERCHANT' => $val_merchant
+
+            ];
+            // json_encode($param);
+            // dd(json_encode($param));
+
+            // dd($request->merchant);
+
+            $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
+
+            return redirect()
+                ->route('merchant.index')
+                ->with('success', 'Merchant updated successfully');
+        }
     }
 
     public function saldo(Request $request)
@@ -343,18 +386,16 @@ class MerchantController extends Controller
 
     public function categories()
     {
-      
+
         $mcc = Mcc::orderBy('DESC_MCC')
-        ->get();
+            ->get();
         // ->toArray();
 
-       
+
 
         // $merchants = $mcc->paginate(5); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.categories', ['mcc' => $mcc]);
-                
-        
     }
 
     public function categoriesCreate()
@@ -366,5 +407,16 @@ class MerchantController extends Controller
         // $prov = getWilayah();
 
         return view('merchant.categoriesCreate');
+    }
+
+    public function categoriesEdit($ID)
+    {
+
+        // dd($ID);
+        $id = Crypt::decrypt($ID);
+        $mcc = Mcc::where('id', $id)->first();
+
+        // dd($mcc);
+        return view('merchant.categoriesEdit', compact('mcc'));
     }
 }

@@ -134,8 +134,8 @@
                     </div>
                     <div class="form-group col-12">
                         <label>Merchant PAN</label>
-                        <input type="text" class="form-control" name="MERCHANT_NAME" id="MERCHANT_NAME"
-                            value="9360052177010119420" required readonly>
+                        <input type="text" class="form-control" name="MPAN_RF" id="MPAN_RF"
+                         required readonly>
                     </div>
                     <div class="form-group col-12">
                         <label>Issuing Institution Name </label>
@@ -554,6 +554,9 @@
                 .then(data => {
                     let time = data.bit_12.substring(0, 2) + ':' + data.bit_12.substring(2, 4) + ':' + data.bit_12
                         .substring(4, 6) + ' ' + data.UPDATED_AT.substring(0, 10);
+
+
+                        console.log(data)
 
                     $('#refundModal').modal('show');
 

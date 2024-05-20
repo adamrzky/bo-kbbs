@@ -32,34 +32,17 @@
 				<div class="card-body">
 					<div class="row">
 						<div class="form-group col-6">
-							<label>Nomor Rekening</label>
-							<input type="number" class="form-control" name="norek" id="norek" value="{{ old('norek') }}" required>
+							<input type="text" class="form-control" name="merchantType" id="merchantType" value="addMcc" hidden >
+							<label>Code MCC</label>
+							<input type="number" class="form-control" name="code" id="code"  required>
 						</div>
 						<div class="form-group col-6">
-							<label>Nama Merchant</label>
-							<input type="text" class="form-control" name="merchant" id="merchant" value="{{ old('merchant') }}" required>
-						</div>
-						<div class="form-group col-6">
-							<label>Kategori Merchant (MCC)</label>
-							
-						</div>
-						<div class="form-group col-6">
-							<label>Kriteria Merchant (Criteria)</label>
-						
+							<label>Deskripsi MCC</label>
+							<input type="text" class="form-control" name="desc" id="desc"  required>
 						</div>
 						
-						<div class="form-group col-6">
-							<label>Alamat</label>
-							<textarea class="form-control" name="address" id="address" rows="3">{{ old('address') }}</textarea>
-						</div>
-						<div class="form-group col-6">
-							<label>Kodepos</label>
-							<input type="number" class="form-control" name="postalcode" id="postalcode" value="{{ old('postalcode') }}">
-						</div>
-						<div hidden  class="form-group  col-6">
-							<label >Fee Merchant</label> 
-							<input type="number" class="form-control" name="fee" id="fee" hidden  value="0" min="0" max="100" value="{{ old('fee') }}">
-						</div>
+						
+						
 					</div>
 				</div>
 				<div class="card-footer">

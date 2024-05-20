@@ -220,11 +220,11 @@ class TransactionController extends Controller
 
             $mpan = MerchantDetails::where('MERCHANT_ID', $value['MERCHANT_ID'])->first();
             if ($mpan != '') {
-                // dd($merchant);
                 $datas[$key]['MPAN'] = $mpan['MPAN'];
             } else {
                 $datas[$key]['MPAN'] = $mpan;
             }
+            // dd($mpan);
         }
 
 
