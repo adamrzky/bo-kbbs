@@ -3,26 +3,32 @@
 @section('title', 'Dashboard')
 
 @section('css')
-    <!-- <link rel="stylesheet" href="/css/admin_custom.css"> -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css">
-    <!-- jQuery Library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 @stop
 
-
-
 @section('content')
-
-
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1> List Transaction </h1>
+                    <h1>List Transaction</h1>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Filter and Export Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <input type="text" id="date-range" class="form-control">
+        </div>
+        <div class="col-md-8 text-right">
+            <button id="exportButton" class="btn btn-success">Export Data</button>
+        </div>
+    </div>
+
     <!-- modal detail -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -134,8 +140,7 @@
                     </div>
                     <div class="form-group col-12">
                         <label>Merchant PAN</label>
-                        <input type="text" class="form-control" name="MPAN_RF" id="MPAN_RF"
-                         required readonly>
+                        <input type="text" class="form-control" name="MPAN_RF" id="MPAN_RF" required readonly>
                     </div>
                     <div class="form-group col-12">
                         <label>Issuing Institution Name </label>
@@ -284,6 +289,7 @@
   </div> --}}
     <!-- / Filters -->
 
+
     <div class="card-body">
         <table id="tbl_list" class="table table-striped table-bordered" cellspacing="0" width="100%">
             <thead>
@@ -291,17 +297,15 @@
                     <th>NO</th>
                     <th>TRANSACTION_ID</th>
                     <th>MERCHANT_ID</th>
-                    {{-- <th>AMOUNT_TIP_PERCENTAGE</th> --}}
                     <th>EXPIRE_DATE_TIME</th>
                     <th>CREATED_AT</th>
-                    {{-- <th>TIP_INDICATOR</th> --}}
                     <th>FEE_AMOUNT</th>
                     <th>STATUS_TRANSFER</th>
                     <th>RRN</th>
                     <th>AMOUNT</th>
                     <th>AMOUNT_REFUND</th>
                     <th>QR Type</th>
-                    <th>SHOW</th>
+                    {{-- <th>SHOW</th> --}}
                     <th>STATUS</th>
                 </tr>
             </thead>
@@ -310,31 +314,37 @@
             </tbody>
         </table>
     </div>
-
-
 @endsection
 
 @section('js')
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
     <script type="text/javascript">
-        $('#searchByAmount').keyup(function() {
-            DataTable();
-        });
-
-        $('#tbl_list').on('click', '.detail-btn', function() {
-            var id = $(this).data('id');
-
-        });
-
-
         $(document).ready(function() {
-            $('#tbl_list').DataTable({
+            var table = $('#tbl_list').DataTable({
                 processing: true,
                 serverSide: true,
                 scrollX: true,
                 ajax: {
                     url: "{{ route('transactions.data') }}",
+                    data: function(d) {
+                        d.date_range = $('#date-range').val();
+                    }
                 },
+                dom: 'Bfrtip', // Needed to show export options
+                buttons: [
+                    'csv', 'excel', 'print'
+                ],
                 order: [
                     [4, 'desc']
                 ],
@@ -349,14 +359,12 @@
                     {
                         data: 'MERCHANT_ID'
                     },
-
                     {
                         data: 'EXPIRE_DATE_TIME'
                     },
                     {
                         data: 'CREATED_AT'
                     },
-
                     {
                         data: 'FEE_AMOUNT'
                     },
@@ -381,28 +389,20 @@
                     {
                         data: 'QR_TYPE',
                         render: function(data, type, row, meta) {
-                            if (data === 11) {
-                                return 'static';
-                            } else if (data === 12) {
-                                return 'dinamic';
-                            } else {
-                                return '';
-                            }
+                            return data === 11 ? 'static' : data === 12 ? 'dynamic' : '';
                         },
                     },
-                    {
-                        render: function(data, type, row, meta) {
-                            return '<div class="btn-group">' +
-                                '<button class="btn btn-sm btn-info detail-btn" onclick="showDetail(\'' +
-                                row.ID + '\', this)">' +
-                                'Detail' +
-                                '<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>' +
-                                '</button>' +
-                                '</div>';
-                        }
-
-
-                    },
+                    // {
+                    //     render: function(data, type, row, meta) {
+                    //         return '<div class="btn-group">' +
+                    //             '<button class="btn btn-sm btn-info detail-btn" onclick="showDetail(\'' +
+                    //             row.ID + '\', this)">' +
+                    //             'Detail' +
+                    //             '<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>' +
+                    //             '</button>' +
+                    //             '</div>';
+                    //     }
+                    // },
                     {
                         render: function(data, type, row, meta) {
                             if (row.TRANSFER_STATUS === 3 && row.RC_FUND == 68) {
@@ -428,12 +428,26 @@
                                     '</div>';
                             }
                         }
-
                     },
-
-                ],
+                ]
             });
 
+            // Inisialisasi Date Range Picker
+            $('#date-range').daterangepicker({
+                locale: {
+                    format: 'YYYY-MM-DD'
+                },
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month')
+            });
+
+            $('#date-range').on('apply.daterangepicker', function(ev, picker) {
+                table.draw();
+            });
+
+            $('#exportButton').on('click', function() {
+                table.button('.buttons-excel').trigger();
+            });
         });
 
         function formatNumberWithThousandSeparator(number) {
@@ -441,11 +455,8 @@
         }
 
         function showDetail(id) {
-            // Get the button element
             var button = event.target;
             button.disabled = true;
-
-            // Show the loading indicator
             var spinner = button.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
 
@@ -455,16 +466,10 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // Hide the loading indicator
                     spinner.classList.add('d-none');
-
-                    // Enable the button
                     button.disabled = false;
 
-                    // Show the modal
                     $('#detailModal').modal('show');
-
-                    // Update the modal content
                     $('#ID').val(data.ID);
                     $('#INVOICE_NUMBER').val(data.INVOICE_NUMBER);
                     $('#RETRIEVAL_REFERENCE_NUMBER').val(data.RETRIEVAL_REFERENCE_NUMBER);
@@ -478,29 +483,22 @@
                     $('#MERCHANT_NAME').val(data.MERCHANT['MERCHANT_NAME']);
                 })
                 .catch(error => {
-                    // Hide the loading indicator
                     spinner.classList.add('d-none');
-
-                    // Enable the button
                     button.disabled = false;
-
                     console.error(error);
                 });
         }
 
-
-
         function trxDetail(id) {
-
             var url = "{{ route('transactions.detail', ':id') }}";
             url = url.replace(':id', id);
 
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
+
                     let time = data.bit_12.substring(0, 2) + ':' + data.bit_12.substring(2, 4) + ':' + data.bit_12
                         .substring(4, 6) + ' ' + data.UPDATED_AT.substring(0, 10);
-
                     $('#trxModal').modal('show');
                     $('#ID').val(data.ID);
                     $('#CREATED_AT_TRX').val(data.CREATED_AT);
@@ -513,7 +511,6 @@
                     $('#MPAN_TRX').val(data.MPAN);
                     $('#FEE_AMOUNT_TRX').val(data.FEE_AMOUNT);
                     $('#bit_12_TRX').val(time);
-
 
                     if (data.TRANSFER_STATUS === 1) {
                         $('#TRANSACTION_TYPE_TRX').val('Payment');
@@ -528,23 +525,15 @@
                     } else {
                         $('#STATUS_TRANSACTION_TRX').val('Refund');
                     }
-
-
-
-
                 })
                 .catch(error => console.error(error));
         }
 
         function refundDetail(id) {
-
             var button = event.target;
             button.disabled = true;
-
-            // Show the loading indicator
             var spinner = button.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
-
 
             var url = "{{ route('transactions.detail', ':id') }}";
             url = url.replace(':id', id);
@@ -554,12 +543,7 @@
                 .then(data => {
                     let time = data.bit_12.substring(0, 2) + ':' + data.bit_12.substring(2, 4) + ':' + data.bit_12
                         .substring(4, 6) + ' ' + data.UPDATED_AT.substring(0, 10);
-
-
-                        console.log(data)
-
                     $('#refundModal').modal('show');
-
                     $('#ID').val(data.ID);
                     $('#CREATED_AT_RF').val(data.CREATED_AT);
                     $('#RETRIEVAL_REFERENCE_NUMBER_RF').val(data.RRN_REFUND);
@@ -587,11 +571,6 @@
                     } else {
                         $('#STATUS_TRANSACTION_RF').val('Refund');
                     }
-
-
-
-
-
                 })
                 .catch(error => console.error(error));
         }

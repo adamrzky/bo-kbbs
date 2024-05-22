@@ -69,24 +69,46 @@ class TransactionController extends Controller
 
         if ($request->ajax()) {
 
+            $dateRange = $request->date_range; // Format: 'YYYY-MM-DD - YYYY-MM-DD'
+            $startDate = null;
+            $endDate = null;
 
-
+            if (!empty($dateRange)) {
+                $dates = explode(' - ', $dateRange);
+                if (count($dates) == 2) {
+                    $startDate = trim($dates[0]);
+                    $endDate = trim($dates[1]) . ' 23:59:59'; // Tambahkan waktu di akhir hari untuk inklusi penuh
+                }
+            }
 
             switch (env('APP_ENV')) {
                 case 'local':
+
                     $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
 
                     foreach ($data as $key => $value) {
-
                         $merchant = Merchant::where('ID', $value['MERCHANT_ID'])->first();
                         if ($merchant != '') {
-                            // dd($merchant);
                             $data[$key]['MERCHANT'] = $merchant->toArray();
                         } else {
                             $data[$key]['MERCHANT'] = $merchant;
                         }
                     }
+
+                    // Filter data berdasarkan rentang tanggal
+                    if ($startDate && $endDate) {
+                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
+                            $createdAt = $item['CREATED_AT'] ?? null;
+                            return $createdAt >= $startDate && $createdAt <= $endDate;
+                        });
+                    } else {
+                        $data = $data;
+                    }
+
+                    // dd($filteredData);
+
                     break;
+
                 case 'dev':
                     $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
 
