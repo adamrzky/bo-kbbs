@@ -89,6 +89,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::delete('/merchant/{merchant}/destroy', 'MerchantController@destroy')->name('merchant.destroy');
     Route::post('/merchant/saldo', 'MerchantController@saldo')->name('merchant.saldo');
     Route::post('/merchant/mutasi', 'MerchantController@mutasi')->name('merchant.mutasi');
+    Route::post('/merchant/cekNorek', 'MerchantController@rekening')->name('merchant.rekening');
 
     //transaction
     Route::get('/transaction', 'TransactionController@index')->name('transactions.index');

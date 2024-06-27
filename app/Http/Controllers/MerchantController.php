@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 
 class MerchantController extends Controller
 {
@@ -185,7 +188,56 @@ class MerchantController extends Controller
 
 
 
-                $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
+                // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
+
+                // Hanya setelah data merchant berhasil disimpan
+                if (isset($merchants)) {
+                    $spreadsheet = new Spreadsheet();
+                    $sheet = $spreadsheet->getActiveSheet();
+
+                    // Setup header
+                    $sheet->setCellValue('A1', 'No.');
+                    $sheet->setCellValue('B1', 'NMID');
+                    $sheet->setCellValue('C1', 'Nama Merchant (max 50)');
+                    $sheet->setCellValue('D1', 'Nama Merchant (max 25)');
+                    $sheet->setCellValue('E1', 'MPAN');
+                    $sheet->setCellValue('F1', 'MID');
+                    $sheet->setCellValue('G1', 'Kota');
+                    $sheet->setCellValue('H1', 'Kodepos');
+                    $sheet->setCellValue('I1', 'Kriteria');
+                    $sheet->setCellValue('J1', 'MCC');
+                    $sheet->setCellValue('K1', 'Jml Terminal');
+                    $sheet->setCellValue('L1', 'Tipe Merchant');
+                    $sheet->setCellValue('M1', 'NPWP');
+                    $sheet->setCellValue('N1', 'KTP');
+                    $sheet->setCellValue('O1', 'Tipe QR');
+
+                    // Menambahkan data baris ke-1
+                    $sheet->setCellValue('A2', '1'); // Anda mungkin ingin membuat ini dinamis
+                    $sheet->setCellValue('B2', $nmid);
+                    $sheet->setCellValue('C2', $request->merchant);
+                    $sheet->setCellValue('D2', $request->merchant); // Anda mungkin membutuhkan logika untuk memotong nama jika perlu
+                    $sheet->setCellValue('E2', $nns . $request->norek);
+                    $sheet->setCellValue('F2', $nmid);
+                    $sheet->setCellValue('G2', $request->city);
+                    $sheet->setCellValue('H2', $request->postalcode);
+                    $sheet->setCellValue('I2', $request->criteria);
+                    $sheet->setCellValue('J2', $request->mcc);
+                    $sheet->setCellValue('K2', '1'); // Misalnya jumlah terminal, anda harus menyesuaikannya
+                    $sheet->setCellValue('L2', $request->mcc); // Anda mungkin perlu memetakan ini dari ID ke deskripsi
+                    $sheet->setCellValue('M2', $request->npwp);
+                    $sheet->setCellValue('N2', $request->ktp);
+                    $sheet->setCellValue('O2', $request->type_qr);
+
+                    // Save Excel to disk
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'MerchantData.xlsx';
+                    $writer->save($filename);
+
+                    // Opsional: Kirim file sebagai respons download
+                    $file_path = public_path($filename);
+                    return response()->download($file_path)->deleteFileAfterSend(true);
+                }
 
                 return redirect()
                     ->route('merchant.index')
@@ -258,8 +310,7 @@ class MerchantController extends Controller
                 // Kembali ke halaman sebelumnya dengan pesan error
                 return back()->withErrors(['msg' => 'Merchant update failed. (' . $th->getMessage() . ')']);
             }
-        
-    } else {
+        } else {
 
             $data_merchant = [
                 'ID' => 'required',
@@ -339,6 +390,35 @@ class MerchantController extends Controller
                 ->with('success', 'Merchant updated successfully');
         }
     }
+
+
+    public function rekening(Request $request)
+    {
+        $norek = $request->input('norek');
+        try {
+            // Asumsikan fungsi cekNorek mengembalikan array dengan 'rc' dan mungkin lebih
+            $hasilCek = $this->cekNorek($norek);
+
+            if ($hasilCek['rc'] != '0000') {
+                return response()->json([
+                    'error' => 'Nomor Rekening tidak valid',
+                ]);
+            }
+
+            return response()->json([
+                'norek' => $hasilCek['norek'],
+                'name' => $hasilCek['name'],
+                'balance' => number_format($hasilCek['balance'], 0, ',', '.'),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'Terjadi kesalahan dalam verifikasi nomor rekening',
+            ]);
+        }
+    }
+
+
+
 
     public function saldo(Request $request)
     {
