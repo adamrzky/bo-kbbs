@@ -69,10 +69,10 @@
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
-                                <select class="form-control" name="type" id="type" onchange="toggleFields()"
+                                <select class="form-control" name="merchantTipe" id="merchantTipe" onchange="toggleFields()"
                                     required>
-                                    <option value="individual">Individu</option>
-                                    <option value="business">Badan Usaha</option>
+                                    <option value="1">Individu</option>
+                                    <option value="2">Badan Usaha</option>
                                 </select>
                             </div>
 
@@ -192,11 +192,11 @@
 
     <script>
         function toggleFields() {
-            var type = $('#type').val();
-            if (type == 'individual') {
+            var type = $('#merchantTipe').val();
+            if (type == '1') {
                 $('#ktpField').show();
                 $('#npwpField').hide();
-            } else if (type == 'business') {
+            } else if (type == '2') {
                 $('#ktpField').hide();
                 $('#npwpField').show();
             }

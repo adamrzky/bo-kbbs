@@ -19,6 +19,10 @@ use Illuminate\Support\Collection;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 
 
 class MerchantController extends Controller
@@ -190,48 +194,83 @@ class MerchantController extends Controller
 
                 // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=add', $param);
 
-                // Hanya setelah data merchant berhasil disimpan
                 if (isset($merchants)) {
                     $spreadsheet = new Spreadsheet();
                     $sheet = $spreadsheet->getActiveSheet();
-
-                    // Setup header
-                    $sheet->setCellValue('A1', 'No.');
-                    $sheet->setCellValue('B1', 'NMID');
-                    $sheet->setCellValue('C1', 'Nama Merchant (max 50)');
-                    $sheet->setCellValue('D1', 'Nama Merchant (max 25)');
-                    $sheet->setCellValue('E1', 'MPAN');
-                    $sheet->setCellValue('F1', 'MID');
-                    $sheet->setCellValue('G1', 'Kota');
-                    $sheet->setCellValue('H1', 'Kodepos');
-                    $sheet->setCellValue('I1', 'Kriteria');
-                    $sheet->setCellValue('J1', 'MCC');
-                    $sheet->setCellValue('K1', 'Jml Terminal');
-                    $sheet->setCellValue('L1', 'Tipe Merchant');
-                    $sheet->setCellValue('M1', 'NPWP');
-                    $sheet->setCellValue('N1', 'KTP');
-                    $sheet->setCellValue('O1', 'Tipe QR');
-
-                    // Menambahkan data baris ke-1
-                    $sheet->setCellValue('A2', '1'); // Anda mungkin ingin membuat ini dinamis
-                    $sheet->setCellValue('B2', $nmid);
-                    $sheet->setCellValue('C2', $request->merchant);
-                    $sheet->setCellValue('D2', $request->merchant); // Anda mungkin membutuhkan logika untuk memotong nama jika perlu
-                    $sheet->setCellValue('E2', $nns . $request->norek);
-                    $sheet->setCellValue('F2', $nmid);
-                    $sheet->setCellValue('G2', $request->city);
-                    $sheet->setCellValue('H2', $request->postalcode);
-                    $sheet->setCellValue('I2', $request->criteria);
-                    $sheet->setCellValue('J2', $request->mcc);
-                    $sheet->setCellValue('K2', '1'); // Misalnya jumlah terminal, anda harus menyesuaikannya
-                    $sheet->setCellValue('L2', $request->mcc); // Anda mungkin perlu memetakan ini dari ID ke deskripsi
-                    $sheet->setCellValue('M2', $request->npwp);
-                    $sheet->setCellValue('N2', $request->ktp);
-                    $sheet->setCellValue('O2', $request->type_qr);
+            
+                    // Setup titles
+                    $sheet->setCellValue('A1', 'FORM PENDAFTARAN');
+                    $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
+                    $sheet->mergeCells('A1:O1'); // Merging title
+                    $sheet->mergeCells('A2:O2'); // Merging subtitle
+            
+                    // Applying styles to the merged headers
+                    $sheet->getStyle('A1:O2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('A1:O2')->getFont()->setBold(true);
+            
+                    // Header row for "Mandatory"
+                    $sheet->setCellValue('B3', 'Mandatory');
+                    $sheet->mergeCells('B3:O3');
+                    $sheet->getStyle('B3:O3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('B3:O3')->getFont()->setBold(true);
+                    $sheet->getStyle('B3')->getFill()
+                          ->setFillType(Fill::FILL_SOLID)
+                          ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+            
+                    // Headers for columns
+                    $headers = [
+                        'A3' => 'No.', 'B4' => 'NMID', 'C4' => 'Nama Merchant (max 50)', 'D4' => 'Nama Merchant (max 25)', 
+                        'E4' => 'MPAN', 'F4' => 'MID', 'G4' => 'Kota', 'H4' => 'Kodepos', 'I4' => 'Kriteria', 
+                        'J4' => 'MCC', 'K4' => 'Jml Terminal', 'L4' => 'Tipe Merchant', 'M4' => 'NPWP', 
+                        'N4' => 'KTP', 'O4' => 'Tipe QR'
+                    ];
+            
+                    foreach ($headers as $cell => $value) {
+                        $sheet->getStyle($cell, $value)->getFill()
+                          ->setFillType(Fill::FILL_SOLID)
+                          ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+                        $sheet->setCellValue($cell, $value);
+                        // Apply border and styling for all headers
+                        $sheet->getStyle($cell)->applyFromArray([
+                            'borders' => [
+                                'outline' => [
+                                    'borderStyle' => Border::BORDER_MEDIUM,
+                                    'color' => ['argb' => '000000'],
+                                ],
+                            ],
+                        ]);
+                    }
+            
+                    // Adding number data spanning rows 3-4
+                    $sheet->mergeCells('A3:A4');
+                    $sheet->setCellValue('A3', 'NO');
+            
+                    // Adding actual data at row 5
+                    $data = [
+                        'A5' => '1', 'B5' => $nmid, 'C5' => $request->merchant, 'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
+                        'E5' => $nns . $request->norek, 'F5' => $nmid, 'G5' => $request->city, 'H5' => $request->postalcode, 'I5' => $request->criteria,
+                        'J5' => $request->mcc, 'K5' => '1', 'L5' => $request->merchantTipe, 'M5' => $request->npwp, 'N5' => $request->ktp, 'O5' => $request->qrType
+                    ];
+            
+                    foreach ($data as $cell => $value) {
+                        $sheet->setCellValue($cell, $value);
+                        // Apply border to each data cell
+                        $sheet->getStyle($cell)->applyFromArray([
+                            'borders' => [
+                                'outline' => [
+                                    'borderStyle' => Border::BORDER_THIN,
+                                    'color' => ['argb' => '000000'],
+                                ],
+                            ],
+                        ]);
+                    }
+            
 
                     // Save Excel to disk
+                    $dateNow = date('Ymd');
                     $writer = new Xlsx($spreadsheet);
-                    $filename = 'MerchantData.xlsx';
+                    $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
+                    // $filename = $nmid . '_1.xlsx'; QRIS_NMR_93600521_20240619
                     $writer->save($filename);
 
                     // Opsional: Kirim file sebagai respons download
