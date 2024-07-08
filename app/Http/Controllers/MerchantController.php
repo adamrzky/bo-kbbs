@@ -399,6 +399,8 @@ class MerchantController extends Controller
             // Asumsikan fungsi cekNorek mengembalikan array dengan 'rc' dan mungkin lebih
             $hasilCek = $this->cekNorek($norek);
 
+            // dd($hasilCek);
+
             if ($hasilCek['rc'] != '0000') {
                 return response()->json([
                     'error' => 'Nomor Rekening tidak valid',
@@ -409,6 +411,7 @@ class MerchantController extends Controller
                 'norek' => $hasilCek['norek'],
                 'name' => $hasilCek['name'],
                 'balance' => number_format($hasilCek['balance'], 0, ',', '.'),
+                'rc' => $hasilCek['rc']
             ]);
         } catch (\Throwable $th) {
             return response()->json([

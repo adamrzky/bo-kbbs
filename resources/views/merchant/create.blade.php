@@ -33,10 +33,15 @@
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>Nomor Rekening</label>
-                                <input type="number" class="form-control" name="norek" id="norek"
-                                    value="{{ old('norek') }}" required>
-                                <button type="button" onclick="cekNorek()" class="btn btn-info">Cek No Rek</button>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="norek" id="norek" value="{{ old('norek') }}" required>
+                                    <div class="input-group-append">
+                                        <span id="norekStatus"></span>
+                                        <button type="button" onclick="cekNorek()" class="btn btn-info">Cek No Rek</button>
+                                    </div>
+                                </div>
                             </div>
+                            
 
                             <div class="form-group col-6">
                                 <label>Nama Merchant</label>
@@ -203,29 +208,34 @@
         });
     </script>
 
-    <script>
-        function cekNorek() {
-            var norek = document.getElementById('norek').value;
-            $.ajax({
-                url: '{{ route('merchant.rekening') }}', // Memanfaatkan route yang diberi nama untuk membangun URL
-                type: 'POST',
-                data: {
-                    norek: norek,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.rc !== '0000') {
-                        alert('Nomor Rekening tidak valid: ' + response.msg);
-                    } else {
-                        alert('Nomor Rekening valid');
-                    }
-                },
-                error: function(xhr) {
-                    alert('Error: ' + xhr.statusText);
+<script>
+    function cekNorek() {
+        var norek = document.getElementById('norek').value;
+        var statusIndicator = document.getElementById('norekStatus');
+
+        $.ajax({
+            url: '{{ route('merchant.rekening') }}',
+            type: 'POST',
+            data: {
+                norek: norek,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.rc != '0000') {
+                    statusIndicator.innerHTML = '<i class="fas fa-times" style="color: red;"></i>';
+                    alert('Nomor Rekening tidak valid: ' + response.msg);
+                } else {
+                    statusIndicator.innerHTML = '<i class="fas fa-check" style="color: green;"></i>';
+                    alert('Nomor Rekening valid');
                 }
-            });
-        }
-    </script>
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.statusText);
+            }
+        });
+    }
+</script>
+
 
 
 
