@@ -42,35 +42,45 @@
                                 </div>
                             </div>
                             
-
                             <div class="form-group col-6">
                                 <label>Nama Merchant</label>
-                                <input type="text" class="form-control" name="merchant" id="merchant"
-                                    value="{{ old('merchant') }}" required>
+                                <input type="text" class="form-control" name="merchant" id="merchant" value="{{ old('merchant') }}" required>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>MPAN</label>
-                                <input type="text" class="form-control" name="mpan" id="mpan"
-                                    value="{{ old('mpan') }}" required>
+                                <input type="text" class="form-control" name="mpan" id="mpan" value="{{ old('mpan') }}" required>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>NMID</label>
-                                <input type="text" class="form-control" name="nmid" id="nmid"
-                                    value="{{ old('nmid') }}" required>
+                                <input type="text" class="form-control" name="nmid" id="nmid" value="{{ old('nmid') }}" required>
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Cabang</label>
+                                <select class="form-control" name="cabang" id="cabang" required>
+                                    @foreach ($cabangs as $cabang)
+                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}" data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
+                                            {{ $cabang->CPC_MC_NAMA }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>MID</label>
-                                <input type="text" class="form-control" name="mid" id="mid"
-                                    value="{{ old('mid') }}" required>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="mid" id="mid" value="{{ old('mid') }}" required>
+                                    <div class="input-group-append">
+                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate MID</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
-                                <select class="form-control" name="merchantTipe" id="merchantTipe" onchange="toggleFields()"
-                                    required>
+                                <select class="form-control" name="merchantTipe" id="merchantTipe" onchange="toggleFields()" required>
                                     <option value="1">Individu</option>
                                     <option value="2">Badan Usaha</option>
                                 </select>
@@ -86,7 +96,6 @@
                                 <input type="text" class="form-control" name="npwp" id="npwp">
                             </div>
 
-
                             <div class="form-group col-6">
                                 <label>Tipe QR</label>
                                 <select class="form-control" name="qrType" id="qrType" required>
@@ -95,8 +104,6 @@
                                     <option value="B">Statis & Dinamis</option>
                                 </select>
                             </div>
-
-
 
                             <div class="form-group col-6">
                                 <label>Kategori Merchant (MCC)</label>
@@ -133,8 +140,7 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Kodepos</label>
-                                <input type="number" class="form-control" name="postalcode" id="postalcode"
-                                    value="{{ old('postalcode') }}">
+                                <input type="number" class="form-control" name="postalcode" id="postalcode" value="{{ old('postalcode') }}">
                             </div>
                             <div class="form-group col-6">
                                 <label>Alamat</label>
@@ -142,8 +148,7 @@
                             </div>
                             <div hidden class="form-group  col-6">
                                 <label>Fee Merchant</label>
-                                <input type="number" class="form-control" name="fee" id="fee" hidden
-                                    value="0" min="0" max="100" value="{{ old('fee') }}">
+                                <input type="number" class="form-control" name="fee" id="fee" hidden value="0" min="0" max="100" value="{{ old('fee') }}">
                             </div>
                         </div>
                     </div>
@@ -166,16 +171,12 @@
                     url: `/api/getLokasi/${provinsi}`,
                     type: 'GET',
                     success: function(msg) {
-
                         var res = msg;
-
-                        // console.log(res);
                         var select = $('#city');
                         var option = new Option('-', '');
                         select.focus();
                         $('option', select).remove();
                         select.append($(option));
-
                         $.each(res, function(text, key) {
                             var option = new Option(key.KOTA);
                             select.append($(option));
@@ -188,9 +189,7 @@
         $(document).ready(function() {
             prov();
         });
-    </script>
 
-    <script>
         function toggleFields() {
             var type = $('#merchantTipe').val();
             if (type == '1') {
@@ -206,38 +205,58 @@
             toggleFields(); // Call on document ready to set the correct field
             prov(); // Initialize your existing province-city logic
         });
-    </script>
 
-<script>
-    function cekNorek() {
-        var norek = document.getElementById('norek').value;
-        var statusIndicator = document.getElementById('norekStatus');
+        function cekNorek() {
+            var norek = document.getElementById('norek').value;
+            var statusIndicator = document.getElementById('norekStatus');
 
-        $.ajax({
-            url: '{{ route('merchant.rekening') }}',
-            type: 'POST',
-            data: {
-                norek: norek,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.rc != '0000') {
-                    statusIndicator.innerHTML = '<i class="fas fa-times" style="color: red;"></i>';
-                    alert('Nomor Rekening tidak valid: ' + response.msg);
-                } else {
-                    statusIndicator.innerHTML = '<i class="fas fa-check" style="color: green;"></i>';
-                    alert('Nomor Rekening valid');
+            $.ajax({
+                url: '{{ route('merchant.rekening') }}',
+                type: 'POST',
+                data: {
+                    norek: norek,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.rc != '0000') {
+                        statusIndicator.innerHTML = '<i class="fas fa-times" style="color: red;"></i>';
+                        alert('Nomor Rekening tidak valid: ' + response.msg);
+                    } else {
+                        statusIndicator.innerHTML = '<i class="fas fa-check" style="color: green;"></i>';
+                        alert('Nomor Rekening valid');
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.statusText);
                 }
-            },
-            error: function(xhr) {
-                alert('Error: ' + xhr.statusText);
-            }
-        });
-    }
-</script>
+            });
+        }
 
+        function generateMid() {
+            var selectedCabang = document.getElementById('cabang');
+            var kodeCabang = selectedCabang.options[selectedCabang.selectedIndex].value;
+            var kodeLokasi = selectedCabang.options[selectedCabang.selectedIndex].getAttribute('data-lokasi');
 
-
-
-
+            $.ajax({
+                url: '{{ route('merchant.generateMid') }}',
+                type: 'POST',
+                data: {
+                    kodeCabang: kodeCabang,
+                    kodeLokasi: kodeLokasi,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        document.getElementById('mid').value = response.mid;
+                        alert('MID berhasil dihasilkan: ' + response.mid);
+                    } else {
+                        alert('Gagal menghasilkan MID: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.statusText);
+                }
+            });
+        }
+    </script>
 @endsection

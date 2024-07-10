@@ -7,6 +7,7 @@ use App\Models\Mcc;
 use App\Models\MerchantDetails;
 use App\Models\MerchantDomestic;
 use App\Models\UserMerchant;
+use App\Models\Cabang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
@@ -74,8 +75,9 @@ class MerchantController extends Controller
             ->toArray();
         $criteria = getCriteria();
         $prov = getWilayah();
+        $cabangs = Cabang::all(); 
 
-        return view('merchant.create', compact('mcc', 'criteria', 'prov'));
+        return view('merchant.create', compact('mcc', 'criteria', 'prov','cabangs'));
     }
 
     /**
@@ -430,6 +432,23 @@ class MerchantController extends Controller
         }
     }
 
+
+    public function generateMid(Request $request)
+    {
+        $nns = '9360052';
+        $kodeCabang = str_pad($request->kodeCabang, 2, '0', STR_PAD_LEFT);
+        $kodeLokasi = str_pad($request->kodeLokasi, 2, '0', STR_PAD_LEFT);
+        
+        // Dummy sequence, Anda bisa mengganti ini dengan logika sequence yang lebih kompleks
+        $sequence = rand(100000, 999999);
+
+        $mid = $nns . $kodeCabang . $kodeLokasi . $sequence;
+
+        return response()->json([
+            'success' => true,
+            'mid' => $mid
+        ]);
+    }
 
     public function rekening(Request $request)
     {

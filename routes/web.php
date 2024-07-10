@@ -90,6 +90,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('/merchant/saldo', 'MerchantController@saldo')->name('merchant.saldo');
     Route::post('/merchant/mutasi', 'MerchantController@mutasi')->name('merchant.mutasi');
     Route::post('/merchant/cekNorek', 'MerchantController@rekening')->name('merchant.rekening');
+    Route::post('/merchant/generateMid', 'MerchantController@generateMid')->name('merchant.generateMid');
 
     //transaction
     Route::get('/transaction', 'TransactionController@index')->name('transactions.index');
