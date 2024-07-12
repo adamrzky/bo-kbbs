@@ -34,34 +34,40 @@
                             <div class="form-group col-6">
                                 <label>Nomor Rekening</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" name="norek" id="norek" value="{{ old('norek') }}" required>
+                                    <input type="number" class="form-control" name="norek" id="norek"
+                                        value="{{ old('norek') }}" required>
                                     <div class="input-group-append">
-                                        <span id="norekStatus"></span>
+                                        <span id="norekStatus" class="input-group-text"></span>
                                         <button type="button" onclick="cekNorek()" class="btn btn-info">Cek No Rek</button>
                                     </div>
                                 </div>
                             </div>
-                            
+
+
                             <div class="form-group col-6">
                                 <label>Nama Merchant</label>
-                                <input type="text" class="form-control" name="merchant" id="merchant" value="{{ old('merchant') }}" required>
+                                <input type="text" class="form-control" name="merchant" id="merchant"
+                                    value="{{ old('merchant') }}" required>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>MPAN</label>
-                                <input type="text" class="form-control" name="mpan" id="mpan" value="{{ old('mpan') }}" required>
+                                <input type="text" class="form-control" name="mpan" id="mpan"
+                                    value="{{ old('mpan') }}">
                             </div>
 
                             <div class="form-group col-6">
                                 <label>NMID</label>
-                                <input type="text" class="form-control" name="nmid" id="nmid" value="{{ old('nmid') }}" required>
+                                <input type="text" class="form-control" name="nmid" id="nmid"
+                                    value="{{ old('nmid') }}">
                             </div>
 
                             <div class="form-group col-6">
                                 <label>Cabang</label>
                                 <select class="form-control" name="cabang" id="cabang" required>
                                     @foreach ($cabangs as $cabang)
-                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}" data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
+                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}"
+                                            data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
                                             {{ $cabang->CPC_MC_NAMA }}
                                         </option>
                                     @endforeach
@@ -71,16 +77,19 @@
                             <div class="form-group col-6">
                                 <label>MID</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="mid" id="mid" value="{{ old('mid') }}" required>
+                                    <input type="text" class="form-control" name="mid" id="mid"
+                                        value="{{ old('mid') }}" readonly required>
                                     <div class="input-group-append">
-                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate MID</button>
+                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate
+                                            MID</button>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
-                                <select class="form-control" name="merchantTipe" id="merchantTipe" onchange="toggleFields()" required>
+                                <select class="form-control" name="merchantTipe" id="merchantTipe" onchange="toggleFields()"
+                                    required>
                                     <option value="1">Individu</option>
                                     <option value="2">Badan Usaha</option>
                                 </select>
@@ -140,7 +149,8 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Kodepos</label>
-                                <input type="number" class="form-control" name="postalcode" id="postalcode" value="{{ old('postalcode') }}">
+                                <input type="number" class="form-control" name="postalcode" id="postalcode"
+                                    value="{{ old('postalcode') }}">
                             </div>
                             <div class="form-group col-6">
                                 <label>Alamat</label>
@@ -148,7 +158,8 @@
                             </div>
                             <div hidden class="form-group  col-6">
                                 <label>Fee Merchant</label>
-                                <input type="number" class="form-control" name="fee" id="fee" hidden value="0" min="0" max="100" value="{{ old('fee') }}">
+                                <input type="number" class="form-control" name="fee" id="fee" hidden
+                                    value="0" min="0" max="100" value="{{ old('fee') }}">
                             </div>
                         </div>
                     </div>
@@ -209,6 +220,10 @@
         function cekNorek() {
             var norek = document.getElementById('norek').value;
             var statusIndicator = document.getElementById('norekStatus');
+            var inputNorek = document.getElementById('norek');
+
+            // Tampilkan animasi loading
+            statusIndicator.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5em;"></i>';
 
             $.ajax({
                 url: '{{ route('merchant.rekening') }}',
@@ -219,18 +234,25 @@
                 },
                 success: function(response) {
                     if (response.rc != '0000') {
-                        statusIndicator.innerHTML = '<i class="fas fa-times" style="color: red;"></i>';
+                        statusIndicator.innerHTML =
+                            '<i class="fas fa-times" style="font-size: 1.5em; color: red;"></i>';
+
                         alert('Nomor Rekening tidak valid: ' + response.msg);
                     } else {
-                        statusIndicator.innerHTML = '<i class="fas fa-check" style="color: green;"></i>';
-                        alert('Nomor Rekening valid');
+                        statusIndicator.innerHTML =
+                            '<i class="fas fa-check" style="font-size: 1.5em; color: green;"></i>';
+
+                        // alert('Nomor Rekening valid');
                     }
                 },
                 error: function(xhr) {
                     alert('Error: ' + xhr.statusText);
+                    statusIndicator.innerHTML =
+                        '<i class="fas fa-times" style="font-size: 1.5em; color: red;"></i>';
                 }
             });
         }
+
 
         function generateMid() {
             var selectedCabang = document.getElementById('cabang');
@@ -248,7 +270,7 @@
                 success: function(response) {
                     if (response.success) {
                         document.getElementById('mid').value = response.mid;
-                        alert('MID berhasil dihasilkan: ' + response.mid);
+                        // alert('MID berhasil dihasilkan: ' + response.mid);
                     } else {
                         alert('Gagal menghasilkan MID: ' + response.message);
                     }
