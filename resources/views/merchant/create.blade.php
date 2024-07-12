@@ -79,7 +79,9 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" name="mid" id="mid"
                                         value="{{ old('mid') }}" readonly required>
+                                   
                                     <div class="input-group-append">
+                                        <span id="midStatus" class="input-group-text"></span>
                                         <button type="button" onclick="generateMid()" class="btn btn-info">Generate
                                             MID</button>
                                     </div>
@@ -258,6 +260,9 @@
             var selectedCabang = document.getElementById('cabang');
             var kodeCabang = selectedCabang.options[selectedCabang.selectedIndex].value;
             var kodeLokasi = selectedCabang.options[selectedCabang.selectedIndex].getAttribute('data-lokasi');
+            var statusIndicator = document.getElementById('midStatus'); // Pastikan elemen ini ada di HTML
+
+            statusIndicator.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5em;"></i>';
 
             $.ajax({
                 url: '{{ route('merchant.generateMid') }}',
@@ -270,13 +275,18 @@
                 success: function(response) {
                     if (response.success) {
                         document.getElementById('mid').value = response.mid;
-                        // alert('MID berhasil dihasilkan: ' + response.mid);
+                        statusIndicator.innerHTML =
+                            '<i class="fas fa-check" style="font-size: 1.5em; color: green;"></i>';
                     } else {
                         alert('Gagal menghasilkan MID: ' + response.message);
+                        statusIndicator.innerHTML =
+                            '<i class="fas fa-times" style="font-size: 1.5em; color: red;"></i>';
                     }
                 },
                 error: function(xhr) {
                     alert('Error: ' + xhr.statusText);
+                    statusIndicator.innerHTML =
+                        '<i class="fas fa-times" style="font-size: 1.5em; color: red;"></i>';
                 }
             });
         }

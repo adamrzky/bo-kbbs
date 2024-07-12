@@ -75,9 +75,9 @@ class MerchantController extends Controller
             ->toArray();
         $criteria = getCriteria();
         $prov = getWilayah();
-        $cabangs = Cabang::all(); 
+        $cabangs = Cabang::all();
 
-        return view('merchant.create', compact('mcc', 'criteria', 'prov','cabangs'));
+        return view('merchant.create', compact('mcc', 'criteria', 'prov', 'cabangs'));
     }
 
     /**
@@ -121,12 +121,15 @@ class MerchantController extends Controller
                 'address' => 'required',
                 'postalcode' => 'required',
                 'fee' => 'required',
+                'mid' => 'required',
             ]);
 
-            $cek = $this->cekNorek($request->norek);
-            if ($cek['rc'] != '0000') {
-                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            }
+            // $cek = $this->cekNorek($request->norek);
+            // if ($cek['rc'] != '0000') {
+            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            // }
+
+            // dd($request);
 
             try {
                 $date = date('Y-m-d H:i:s');
@@ -159,6 +162,8 @@ class MerchantController extends Controller
                     'STATUS' => '1',
                     'NMID' => $nmid,
                     'ACCOUNT_NUMBER' => $request->norek,
+                    'KTP' => $request->ktp,
+                    'NPWP' => $request->npwp,
                 ];
 
                 $merchants = Merchant::create($data_merchant);
@@ -179,7 +184,7 @@ class MerchantController extends Controller
                     'DOMAIN' => $domain,
                     'TAG' => '26',
                     'MPAN' => $nns . $request->norek,
-                    'MID' => $nmid,
+                    'MID' => $request->mid,
                     'CRITERIA' => $request->criteria,
                 ];
                 $merchant_detail = MerchantDetails::create($data_detail);
@@ -199,38 +204,38 @@ class MerchantController extends Controller
                 if (isset($merchants)) {
                     $spreadsheet = new Spreadsheet();
                     $sheet = $spreadsheet->getActiveSheet();
-            
+
                     // Setup titles
                     $sheet->setCellValue('A1', 'FORM PENDAFTARAN');
                     $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
                     $sheet->mergeCells('A1:O1'); // Merging title
                     $sheet->mergeCells('A2:O2'); // Merging subtitle
-            
+
                     // Applying styles to the merged headers
                     $sheet->getStyle('A1:O2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle('A1:O2')->getFont()->setBold(true);
-            
+
                     // Header row for "Mandatory"
                     $sheet->setCellValue('B3', 'Mandatory');
                     $sheet->mergeCells('B3:O3');
                     $sheet->getStyle('B3:O3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle('B3:O3')->getFont()->setBold(true);
                     $sheet->getStyle('B3')->getFill()
-                          ->setFillType(Fill::FILL_SOLID)
-                          ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
-            
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+
                     // Headers for columns
                     $headers = [
-                        'A3' => 'No.', 'B4' => 'NMID', 'C4' => 'Nama Merchant (max 50)', 'D4' => 'Nama Merchant (max 25)', 
-                        'E4' => 'MPAN', 'F4' => 'MID', 'G4' => 'Kota', 'H4' => 'Kodepos', 'I4' => 'Kriteria', 
-                        'J4' => 'MCC', 'K4' => 'Jml Terminal', 'L4' => 'Tipe Merchant', 'M4' => 'NPWP', 
+                        'A3' => 'No.', 'B4' => 'NMID', 'C4' => 'Nama Merchant (max 50)', 'D4' => 'Nama Merchant (max 25)',
+                        'E4' => 'MPAN', 'F4' => 'MID', 'G4' => 'Kota', 'H4' => 'Kodepos', 'I4' => 'Kriteria',
+                        'J4' => 'MCC', 'K4' => 'Jml Terminal', 'L4' => 'Tipe Merchant', 'M4' => 'NPWP',
                         'N4' => 'KTP', 'O4' => 'Tipe QR'
                     ];
-            
+
                     foreach ($headers as $cell => $value) {
                         $sheet->getStyle($cell, $value)->getFill()
-                          ->setFillType(Fill::FILL_SOLID)
-                          ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+                            ->setFillType(Fill::FILL_SOLID)
+                            ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
                         $sheet->setCellValue($cell, $value);
                         // Apply border and styling for all headers
                         $sheet->getStyle($cell)->applyFromArray([
@@ -242,18 +247,18 @@ class MerchantController extends Controller
                             ],
                         ]);
                     }
-            
+
                     // Adding number data spanning rows 3-4
                     $sheet->mergeCells('A3:A4');
                     $sheet->setCellValue('A3', 'NO');
-            
+
                     // Adding actual data at row 5
                     $data = [
                         'A5' => '1', 'B5' => $nmid, 'C5' => $request->merchant, 'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
                         'E5' => $nns . $request->norek, 'F5' => $nmid, 'G5' => $request->city, 'H5' => $request->postalcode, 'I5' => $request->criteria,
                         'J5' => $request->mcc, 'K5' => '1', 'L5' => $request->merchantTipe, 'M5' => $request->npwp, 'N5' => $request->ktp, 'O5' => $request->qrType
                     ];
-            
+
                     foreach ($data as $cell => $value) {
                         $sheet->setCellValue($cell, $value);
                         // Apply border to each data cell
@@ -266,7 +271,7 @@ class MerchantController extends Controller
                             ],
                         ]);
                     }
-            
+
 
                     // Save Excel to disk
                     $dateNow = date('Ymd');
@@ -438,11 +443,12 @@ class MerchantController extends Controller
         $nns = '9360052';
         $kodeCabang = str_pad($request->kodeCabang, 2, '0', STR_PAD_LEFT);
         $kodeLokasi = str_pad($request->kodeLokasi, 2, '0', STR_PAD_LEFT);
-        
-        // Dummy sequence, Anda bisa mengganti ini dengan logika sequence yang lebih kompleks
-        $sequence = rand(100000, 999999);
 
-        $mid = $nns . $kodeCabang . $kodeLokasi . $sequence;
+        // Mengambil ID terakhir dan menambahkannya dengan 1 untuk sequence baru
+        $lastMerchant = Merchant::orderBy('ID', 'desc')->first();
+        $sequence = $lastMerchant ? $lastMerchant['ID'] + 1 : 1;
+
+        $mid = $kodeCabang . $kodeLokasi . str_pad($sequence, 6, '0', STR_PAD_LEFT);
 
         return response()->json([
             'success' => true,
