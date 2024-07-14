@@ -272,20 +272,65 @@ class MerchantController extends Controller
                         ]);
                     }
 
+
+                    // switch (env('APP_ENV')) {
+                    //     case 'local':
+                    //         $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
+                    //         break;
+                    //     case 'dev':
+                    //         $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
+                    //         break;
+                    //     case 'prod':
+                    //         $userId = Auth::id();
+
+                    //         $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+                    //             ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+                    //             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+                    //             ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+
+                    //         if ($userId != 1) {
+                    //             $query->where('users.id', $userId);
+                    //         }
+                    //         $datas = $query->get()->toArray();
+                    //         break;
+                    // }
+
                     $dateNow = date('Ymd');
-                    $storagePath = '/home/adam/test/KBBS_OUT/' . $dateNow;
-
-                    // Cek jika direktori sudah ada, jika tidak, buat
-                    if (!file_exists($storagePath)) {
-                        mkdir($storagePath, 0777, true);
+                    $appEnv = getenv('APP_ENV');
+                    
+                    switch ($appEnv) {
+                        case 'prod':
+                            $storagePath = '/home/adam/test/KBBS_OUT/' . $dateNow;
+                            break;
+                        case 'dev':
+                            $storagePath = '/home/adam/test/KBBS_OUT_DEV/' . $dateNow;
+                            break;
+                        case 'local':
+                            $storagePath = null;
+                            break;
+                        default:
+                            // Jika environment tidak sesuai, mungkin Anda ingin menambahkan logging atau menghentikan eksekusi
+                            die('Invalid environment.');
                     }
-
-                    // Save Excel to disk
-                    $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
-                    $path = $storagePath . '/' . $filename;
-                    $writer = new Xlsx($spreadsheet);
-                    $writer->save($path);
-
+                    
+                    if ($appEnv === 'local') {
+                        // Download file untuk environment local
+                        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                        header('Content-Disposition: attachment; filename="QRIS_NMR_9360052_' . $dateNow . '.xlsx"');
+                        $writer = new Xlsx($spreadsheet);
+                        $writer->save('php://output');
+                        exit;
+                    } else {
+                        // Simpan file ke disk untuk environment prod dan dev
+                        if (!file_exists($storagePath)) {
+                            mkdir($storagePath, 0777, true);
+                        }
+                    
+                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
+                        $path = $storagePath . '/' . $filename;
+                        $writer = new Xlsx($spreadsheet);
+                        $writer->save($path);
+                    }
 
                     // // Save Excel to disk
                     // $dateNow = date('Ymd');
