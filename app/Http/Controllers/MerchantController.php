@@ -272,17 +272,31 @@ class MerchantController extends Controller
                         ]);
                     }
 
+                    $dateNow = date('Ymd');
+                    $storagePath = '/home/adam/test/KBBS_OUT/' . $dateNow;
+
+                    // Cek jika direktori sudah ada, jika tidak, buat
+                    if (!file_exists($storagePath)) {
+                        mkdir($storagePath, 0777, true);
+                    }
 
                     // Save Excel to disk
-                    $dateNow = date('Ymd');
-                    $writer = new Xlsx($spreadsheet);
                     $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
-                    // $filename = $nmid . '_1.xlsx'; QRIS_NMR_93600521_20240619
-                    $writer->save($filename);
+                    $path = $storagePath . '/' . $filename;
+                    $writer = new Xlsx($spreadsheet);
+                    $writer->save($path);
 
-                    // Opsional: Kirim file sebagai respons download
-                    $file_path = public_path($filename);
-                    return response()->download($file_path)->deleteFileAfterSend(true);
+
+                    // // Save Excel to disk
+                    // $dateNow = date('Ymd');
+                    // $writer = new Xlsx($spreadsheet);
+                    // $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
+                    // // $filename = $nmid . '_1.xlsx'; QRIS_NMR_93600521_20240619
+                    // $writer->save($filename);
+
+                    // // Opsional: Kirim file sebagai respons download
+                    // $file_path = public_path($filename);
+                    // return response()->download($file_path)->deleteFileAfterSend(true);
                 }
 
                 return redirect()

@@ -74,14 +74,16 @@
                             <div class="form-group col-6">
                                 <label>MPAN</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="mpan" id="mpan" value="{{ old('mpan') }}" readonly>
+                                    <input type="text" class="form-control" name="mpan" id="mpan"
+                                        value="{{ old('mpan') }}" readonly>
                                     <div class="input-group-append">
-                                        <button type="button" onclick="generateMpan()" class="btn btn-info">Generate MPAN</button>
+                                        <button type="button" onclick="generateMpan()" class="btn btn-info">Generate
+                                            MPAN</button>
                                     </div>
                                 </div>
                             </div>
 
-                           
+
                             <div class="form-group col-6">
                                 <label>Cabang</label>
                                 <select class="form-control" name="cabang" id="cabang" required>
@@ -94,7 +96,7 @@
                                 </select>
                             </div>
 
-                            
+
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
@@ -154,7 +156,7 @@
                             <div class="form-group col-6">
                                 <label>Kota</label>
                                 <select class="form-control" name="city" id="city" required>
-                                    <option value="Bandung">Bandung</option>
+                                    <option value="">-</option>
                                 </select>
                             </div>
                             <div class="form-group col-6">
@@ -185,27 +187,29 @@
 
 @section('js')
     <script>
-        function prov() {
-            $("#prov").change(function() {
-                var provinsi = $("#prov").val();
-                $.ajax({
-                    url: `/api/getLokasi/${provinsi}`,
-                    type: 'GET',
-                    success: function(msg) {
-                        var res = msg;
-                        var select = $('#city');
-                        var option = new Option('-', '');
-                        select.focus();
-                        $('option', select).remove();
+        $("#prov").change(function() {
+            var provinsi = $("#prov").val();
+            var negara = 'ID'; // Asumsikan negara selalu ID seperti dalam contoh
+
+            $.ajax({
+                url: `http://103.182.72.16:10002/api.php?negara=${negara}&prov=${provinsi}`,
+                type: 'GET',
+                success: function(msg) {
+                    var res = JSON.parse(msg); // Jika respon adalah JSON string
+                    var select = $('#city');
+                    select.empty(); // Menghapus semua option yang ada
+                    select.append(new Option('-', '')); // Menambahkan option default
+
+                    $.each(res, function(index, item) {
+                        var option = new Option(item.KOTA, item.KODE);
                         select.append($(option));
-                        $.each(res, function(text, key) {
-                            var option = new Option(key.KOTA);
-                            select.append($(option));
-                        });
-                    }
-                });
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + error);
+                }
             });
-        }
+        });
 
         $(document).ready(function() {
             prov();
