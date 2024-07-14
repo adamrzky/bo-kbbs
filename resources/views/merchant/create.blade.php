@@ -307,7 +307,7 @@
             var mid = document.getElementById('mid').value;
             if (mid) {
                 // NNS + "0" + MID
-                var nns = '9360052'; // Contoh NNS, sesuaikan dengan kebutuhan Anda
+                var nns = '93600521'; // Contoh NNS, sesuaikan dengan kebutuhan Anda
                 var baseMpan = nns + "0" + mid;
 
                 // Menghitung Luhn digit dan menambahkannya di akhir

@@ -254,9 +254,21 @@ class MerchantController extends Controller
 
                     // Adding actual data at row 5
                     $data = [
-                        'A5' => '1', 'B5' => $request->nmid, 'C5' => $request->merchant, 'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
-                        'E5' => $request->mpan, 'F5' => $request->mid, 'G5' => $request->city, 'H5' => $request->postalcode, 'I5' => $request->criteria,
-                        'J5' => $request->mcc, 'K5' => '1', 'L5' => $request->merchantTipe, 'M5' => $request->npwp, 'N5' => $request->ktp, 'O5' => $request->qrType
+                        'A5' => '1', 
+                        'B5' => $request->nmid, 
+                        'C5' => $request->merchant, 
+                        'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
+                        'E5' => "'" . $request->mpan . "'",  // Menambahkan tanda kutip pada MPAN
+                        'F5' => $request->mid, 
+                        'G5' => $request->city, 
+                        'H5' => $request->postalcode, 
+                        'I5' => $request->criteria,
+                        'J5' => $request->mcc, 
+                        'K5' => '1', 
+                        'L5' => $request->merchantType, 
+                        'M5' => "'" . $request->npwp . "'",  // Menambahkan tanda kutip pada NPWP
+                        'N5' => "'" . $request->ktp . "'",   // Menambahkan tanda kutip pada KTP
+                        'O5' => $request->qrType
                     ];
 
                     foreach ($data as $cell => $value) {
@@ -293,20 +305,20 @@ class MerchantController extends Controller
                         default:
                             die('Invalid environment.');
                     }
-
+                    
                     function getNextBatchNumber($storagePath, $dateNow)
                     {
-                        $batchNumber = 1;
-                        while (file_exists($storagePath . '/QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+                        $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
+                        while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx')) {
                             $batchNumber++;
                         }
                         return $batchNumber;
                     }
-
+                    
                     if ($appEnv === 'local') {
                         // Logika download file untuk environment local
-                        $batchNumber = 1;
-                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
+                        $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
+                        $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
                         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                         header('Content-Disposition: attachment; filename="' . $filename . '"');
                         $writer = new Xlsx($spreadsheet);
@@ -321,14 +333,15 @@ class MerchantController extends Controller
                                 return response()->json(['error' => 'Failed to create directory'], 500);
                             }
                         }
-
+                    
                         // Simpan file ke disk untuk environment prod dan dev
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
-                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
+                        $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
                         $path = $storagePath . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
+                    
                 }
 
                 return redirect()
@@ -486,7 +499,7 @@ class MerchantController extends Controller
 
     public function generateMid(Request $request)
     {
-        $nns = '9360052';
+        $nns = '93600521';
         $kodeCabang = str_pad($request->kodeCabang, 2, '0', STR_PAD_LEFT);
         $kodeLokasi = str_pad($request->kodeLokasi, 2, '0', STR_PAD_LEFT);
 
@@ -494,7 +507,7 @@ class MerchantController extends Controller
         $lastMerchant = Merchant::orderBy('ID', 'desc')->first();
         $sequence = $lastMerchant ? $lastMerchant['ID'] + 1 : 1;
 
-        $mid = $kodeCabang . $kodeLokasi . str_pad($sequence, 6, '0', STR_PAD_LEFT);
+        $mid = $kodeCabang . $kodeLokasi . str_pad($sequence, 5, '0', STR_PAD_LEFT);
 
         return response()->json([
             'success' => true,

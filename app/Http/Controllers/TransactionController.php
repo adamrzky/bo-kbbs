@@ -95,16 +95,6 @@ class TransactionController extends Controller
                         }
                     }
 
-                    // Filter data berdasarkan rentang tanggal
-                    if ($startDate && $endDate) {
-                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
-                            $createdAt = $item['CREATED_AT'] ?? null;
-                            return $createdAt >= $startDate && $createdAt <= $endDate;
-                        });
-                    } else {
-                        $data = $data;
-                    }
-
                     // dd($filteredData);
 
                     break;
@@ -113,85 +103,37 @@ class TransactionController extends Controller
                     $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
 
                     foreach ($data as $key => $value) {
-
                         $merchant = Merchant::where('ID', $value['MERCHANT_ID'])->first();
-                        if ($merchant != '') {
-                            // dd($merchant);
-                            $data[$key]['MERCHANT'] = $merchant->toArray();
-                        } else {
-                            $data[$key]['MERCHANT'] = $merchant;
-                        }
-                    
+                        $data[$key]['MERCHANT'] = $merchant ? $merchant->toArray() : null;
                     }
-
-                    // Filter data berdasarkan rentang tanggal
-                    if ($startDate && $endDate) {
-                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
-                            $createdAt = $item['CREATED_AT'] ?? null;
-                            return $createdAt >= $startDate && $createdAt <= $endDate;
-                        });
-                    } else {
-                        $data = $data;
-                    }
-
                     break;
+
                 case 'prod':
-                    $getUserId = Auth::id();
-                    $userId = $getUserId;
+                    $userId = Auth::id();
 
                     $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
                         ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
                         ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
                         ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
 
+
                     if ($userId != 1) {
                         $query->where('users.id', $userId);
                     }
 
-                    // dd($query->get()->toArray());
-
-                    $data = $query->get()->toArray();
-
-                      // Filter data berdasarkan rentang tanggal
-                      if ($startDate && $endDate) {
-                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
-                            $createdAt = $item['CREATED_AT'] ?? null;
-                            return $createdAt >= $startDate && $createdAt <= $endDate;
-                        });
-                    } else {
-                        $data = $data;
-                    }
-
+                    $data = $query->get()->map(function ($item) {
+                        return (array) $item;
+                    })->toArray();
                     break;
             }
 
-
-
-
-            // $data = Transaction::get()->toArray();
-
-
-
-
-
-
-            // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
-
-            // foreach ($data as $key => $value) {
-
-            //     $merchant = Merchant::where('ID',$value['MERCHANT_ID'])->first();
-            //     if ($merchant != '') {
-            //         // dd($merchant);
-            //         $data[$key]['MERCHANT'] = $merchant->toArray();
-            //     } else {
-            //         $data[$key]['MERCHANT'] = $merchant;
-            //     }
-
-
-
-            // }
-
-
+            // Filter data berdasarkan rentang tanggal (di luar switch agar kode tidak duplikat)
+            if ($startDate && $endDate) {
+                $data = array_filter($data, function ($item) use ($startDate, $endDate) {
+                    $createdAt = $item['CREATED_AT'] ?? null;
+                    return $createdAt >= $startDate && $createdAt <= $endDate;
+                });
+            }
 
             // dd($data);
             return DataTables::of($data)
@@ -319,7 +261,7 @@ class TransactionController extends Controller
                     'BIT_2'                  =>   $data['BIT_2'],
                     'CURRENT_AMOUNT_REFUND'                  =>   $data['CURRENT_AMOUNT_REFUND'],
                     'MPAN'                  =>   $data['MPAN'],
-		    'PAID_AT'                  =>   $data['PAID_AT'],
+                    'PAID_AT'                  =>   $data['PAID_AT'],
 
                 ]);
             }
