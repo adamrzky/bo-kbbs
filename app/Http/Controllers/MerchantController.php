@@ -309,11 +309,21 @@ class MerchantController extends Controller
                     function getNextBatchNumber($storagePath, $dateNow)
                     {
                         $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
-                        while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx')) {
+                        $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
+                    
+                        // Jika file tanpa batch sudah ada, mulai cek dari batch 2
+                        if ($firstFileExists) {
+                            $batchNumber = 2;
+                        }
+                    
+                        // Mengecek keberadaan file dengan nama batch selanjutnya
+                        while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                             $batchNumber++;
                         }
+                    
                         return $batchNumber;
                     }
+                    
                     
                     if ($appEnv === 'local') {
                         // Logika download file untuk environment local
@@ -337,10 +347,11 @@ class MerchantController extends Controller
                         // Simpan file ke disk untuk environment prod dan dev
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                        $path = $storagePath . '/' . $filename;
+                        $path = $storagePath . '/' $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
+                    
                     
                 }
 
