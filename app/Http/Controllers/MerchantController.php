@@ -313,10 +313,20 @@ class MerchantController extends Controller
                             die('Invalid environment.');
                     }
                     
+                    function getNextBatchNumber($storagePath, $dateNow) {
+                        $batchNumber = 1;
+                        while (file_exists($storagePath . '/QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+                            $batchNumber++;
+                        }
+                        return $batchNumber;
+                    }
+                    
                     if ($appEnv === 'local') {
                         // Download file untuk environment local
+                        $batchNumber = 1;
+                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
                         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        header('Content-Disposition: attachment; filename="QRIS_NMR_9360052_' . $dateNow . '.xlsx"');
+                        header('Content-Disposition: attachment; filename="' . $filename . '"');
                         $writer = new Xlsx($spreadsheet);
                         $writer->save('php://output');
                         exit;
@@ -326,11 +336,13 @@ class MerchantController extends Controller
                             mkdir($storagePath, 0777, true);
                         }
                     
-                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
+                        $batchNumber = getNextBatchNumber($storagePath, $dateNow);
+                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
                         $path = $storagePath . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
+                    
 
                     // // Save Excel to disk
                     // $dateNow = date('Ymd');
