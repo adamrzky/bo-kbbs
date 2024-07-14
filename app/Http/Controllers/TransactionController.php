@@ -121,7 +121,19 @@ class TransactionController extends Controller
                         } else {
                             $data[$key]['MERCHANT'] = $merchant;
                         }
+                    
                     }
+
+                    // Filter data berdasarkan rentang tanggal
+                    if ($startDate && $endDate) {
+                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
+                            $createdAt = $item['CREATED_AT'] ?? null;
+                            return $createdAt >= $startDate && $createdAt <= $endDate;
+                        });
+                    } else {
+                        $data = $data;
+                    }
+
                     break;
                 case 'prod':
                     $getUserId = Auth::id();
@@ -139,6 +151,17 @@ class TransactionController extends Controller
                     // dd($query->get()->toArray());
 
                     $data = $query->get()->toArray();
+
+                      // Filter data berdasarkan rentang tanggal
+                      if ($startDate && $endDate) {
+                        $data = array_filter($data, function ($item) use ($startDate, $endDate) {
+                            $createdAt = $item['CREATED_AT'] ?? null;
+                            return $createdAt >= $startDate && $createdAt <= $endDate;
+                        });
+                    } else {
+                        $data = $data;
+                    }
+
                     break;
             }
 

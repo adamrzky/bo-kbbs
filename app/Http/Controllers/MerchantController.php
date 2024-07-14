@@ -124,10 +124,10 @@ class MerchantController extends Controller
                 'mid' => 'required',
             ]);
 
-            // $cek = $this->cekNorek($request->norek);
-            // if ($cek['rc'] != '0000') {
-            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            // }
+            $cek = $this->cekNorek($request->norek);
+            if ($cek['rc'] != '0000') {
+                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            }
 
             // dd($request);
 
@@ -272,31 +272,35 @@ class MerchantController extends Controller
                         ]);
                     }
 
-
-
-                    function getNextBatchNumber($storagePath, $dateNow) {
-                        $batchNumber = 1;
-                        while (file_exists($storagePath . '/QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
-                            $batchNumber++;
-                        }
-                        return $batchNumber;
-                    }
-
                     $appEnv = getenv('APP_ENV');
                     $dateNow = date('Ymd');
                     $baseDir = '/home/share/test/KBBS_OUT/';
                     $baseDir2 = '/home/adam/test/KBBS_OUT/';
                     $folderName = $dateNow;
-                    $storagePath = $baseDir . $folderName;
-                    $storagePath2 = $baseDir2 . $folderName;
+                    $storagePathProd = $baseDir . $folderName;
+                    $storagePathDev = $baseDir2 . $folderName;
 
-                    // Mengecek dan membuat direktori jika belum ada
-                    if (!file_exists($storagePath)) {
-                        if (!mkdir($storagePath, 0775, true)) {
-                            // Jika pembuatan direktori gagal, catat error dan kirim response error
-                            error_log("Failed to create directory at $storagePath");
-                            return response()->json(['error' => 'Failed to create directory'], 500);
+                    switch ($appEnv) {
+                        case 'prod':
+                            $storagePath = $storagePathProd;
+                            break;
+                        case 'dev':
+                            $storagePath = $storagePathDev;
+                            break;
+                        case 'local':
+                            $storagePath = null;
+                            break;
+                        default:
+                            die('Invalid environment.');
+                    }
+
+                    function getNextBatchNumber($storagePath, $dateNow)
+                    {
+                        $batchNumber = 1;
+                        while (file_exists($storagePath . '/QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+                            $batchNumber++;
                         }
+                        return $batchNumber;
                     }
 
                     if ($appEnv === 'local') {
@@ -308,15 +312,16 @@ class MerchantController extends Controller
                         $writer = new Xlsx($spreadsheet);
                         $writer->save('php://output');
                         exit;
-                    } else if ($appEnv === 'dev') {
-                        // Simpan file ke disk untuk environment prod dan dev
-                        $batchNumber = getNextBatchNumber($storagePath2, $dateNow);
-                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
-                        $path = $storagePath2 . '/' . $filename;
-                        $writer = new Xlsx($spreadsheet);
-                        $writer->save($path);
-                    
                     } else {
+                        // Mengecek dan membuat direktori jika belum ada
+                        if (!file_exists($storagePath)) {
+                            if (!mkdir($storagePath, 0775, true)) {
+                                // Jika pembuatan direktori gagal, catat error dan kirim response error
+                                error_log("Failed to create directory at $storagePath");
+                                return response()->json(['error' => 'Failed to create directory'], 500);
+                            }
+                        }
+
                         // Simpan file ke disk untuk environment prod dan dev
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
@@ -421,6 +426,19 @@ class MerchantController extends Controller
             // $merchant = Merchant::findOrFail($id);
             $merchant->update($validatedData);
 
+            // $merchant->update($request->all());
+
+
+            // $data_detail = [
+            //     'MERCHANT_ID' => $merchant_id,
+            //     'DOMAIN' => $domain,
+            //     'TAG' => '26',
+            //     'MPAN' => $nns . $request->norek,
+            //     'MID' => $nmid,
+            //     'CRITERIA' => $request->criteria,
+            // ];
+            // $merchant_detail = MerchantDetails::create($data_detail);
+
             $date = date('Y-m-d H:i:s');
             $nmid = 'ID' . genID(13);
             $nns = '93600521';
@@ -496,7 +514,6 @@ class MerchantController extends Controller
             if ($hasilCek['rc'] != '0000') {
                 return response()->json([
                     'error' => 'Nomor Rekening tidak valid',
-                    'rc' => $hasilCek['rc']
                 ]);
             }
 
@@ -565,20 +582,34 @@ class MerchantController extends Controller
 
         $mcc = Mcc::orderBy('DESC_MCC')
             ->get();
+        // ->toArray();
+
+
+
+        // $merchants = $mcc->paginate(5); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.categories', ['mcc' => $mcc]);
     }
 
     public function categoriesCreate()
     {
+        // $mcc = Mcc::orderBy('DESC_MCC')
+        //     ->get()
+        //     ->toArray();
+        // $criteria = getCriteria();
+        // $prov = getWilayah();
+
         return view('merchant.categoriesCreate');
     }
 
     public function categoriesEdit($ID)
     {
+
+        // dd($ID);
         $id = Crypt::decrypt($ID);
         $mcc = Mcc::where('id', $id)->first();
 
+        // dd($mcc);
         return view('merchant.categoriesEdit', compact('mcc'));
     }
 }
