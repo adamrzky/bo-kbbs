@@ -183,7 +183,7 @@ class MerchantController extends Controller
                     'MERCHANT_ID' => $merchant_id,
                     'DOMAIN' => $domain,
                     'TAG' => '26',
-                    'MPAN' => $nns . $request->norek,
+                    'MPAN' => $request->mpan,
                     'MID' => $request->mid,
                     'CRITERIA' => $request->criteria,
                 ];

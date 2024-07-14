@@ -51,9 +51,17 @@
                             </div>
 
                             <div class="form-group col-6">
-                                <label>MPAN</label>
-                                <input type="text" class="form-control" name="mpan" id="mpan"
-                                    value="{{ old('mpan') }}">
+                                <label>MID</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="mid" id="mid"
+                                        value="{{ old('mid') }}" readonly required>
+
+                                    <div class="input-group-append">
+                                        <span id="midStatus" class="input-group-text"></span>
+                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate
+                                            MID</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group col-6">
@@ -62,6 +70,18 @@
                                     value="{{ old('nmid') }}">
                             </div>
 
+
+                            <div class="form-group col-6">
+                                <label>MPAN</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="mpan" id="mpan" value="{{ old('mpan') }}" readonly>
+                                    <div class="input-group-append">
+                                        <button type="button" onclick="generateMpan()" class="btn btn-info">Generate MPAN</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                           
                             <div class="form-group col-6">
                                 <label>Cabang</label>
                                 <select class="form-control" name="cabang" id="cabang" required>
@@ -74,19 +94,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-group col-6">
-                                <label>MID</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="mid" id="mid"
-                                        value="{{ old('mid') }}" readonly required>
-                                   
-                                    <div class="input-group-append">
-                                        <span id="midStatus" class="input-group-text"></span>
-                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate
-                                            MID</button>
-                                    </div>
-                                </div>
-                            </div>
+                            
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
@@ -289,6 +297,44 @@
                         '<i class="fas fa-times" style="font-size: 1.5em; color: red;"></i>';
                 }
             });
+        }
+
+        function generateMpan() {
+            var mid = document.getElementById('mid').value;
+            if (mid) {
+                // NNS + "0" + MID
+                var nns = '9360052'; // Contoh NNS, sesuaikan dengan kebutuhan Anda
+                var baseMpan = nns + "0" + mid;
+
+                // Menghitung Luhn digit dan menambahkannya di akhir
+                var luhnDigit = calculateLuhn(baseMpan);
+                var mpan = baseMpan + luhnDigit;
+
+                document.getElementById('mpan').value = mpan;
+            } else {
+                alert('MID belum dihasilkan. Silakan generate MID terlebih dahulu.');
+            }
+        }
+
+        function calculateLuhn(input) {
+            let sum = 0;
+            let shouldDouble = false; // Mulai dari kanan, double setiap digit kedua
+            for (let i = input.length - 1; i >= 0; i--) {
+                let digit = parseInt(input.charAt(i));
+
+                if (shouldDouble) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+
+            let checkDigit = (10 - (sum % 10)) % 10;
+            return checkDigit;
         }
     </script>
 @endsection
