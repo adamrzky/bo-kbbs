@@ -288,6 +288,7 @@ class MerchantController extends Controller
                     $baseDir2 = '/home/adam/test/KBBS_OUT/';
                     $folderName = $dateNow;
                     $storagePath = $baseDir . $folderName;
+                    $storagePath2 = $baseDir2 . $folderName;
 
                     // Mengecek dan membuat direktori jika belum ada
                     if (!file_exists($storagePath)) {
@@ -309,9 +310,9 @@ class MerchantController extends Controller
                         exit;
                     } else if ($appEnv === 'dev') {
                         // Simpan file ke disk untuk environment prod dan dev
-                        $batchNumber = getNextBatchNumber($storagePath, $dateNow);
+                        $batchNumber = getNextBatchNumber($storagePath2, $dateNow);
                         $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
-                        $path = $storagePath . '/' . $filename;
+                        $path = $storagePath2 . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     
