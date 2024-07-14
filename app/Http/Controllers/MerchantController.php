@@ -138,7 +138,7 @@ class MerchantController extends Controller
                 $domain = 'ID.CO.QRIS.WWW';
                 $data_domestic = [
                     'REVERSE_DOMAIN' => $domain,
-                    'NMID' => $nmid,
+                    'NMID' => '',
                     'MCC' => $request->mcc,
                     'CRITERIA' => $request->criteria,
                 ];
@@ -147,7 +147,7 @@ class MerchantController extends Controller
                 $data_merchant = [
                     'CREATED_AT' => $date,
                     'UPDATED_AT' => '',
-                    'TERMINAL_LABEL' => 'K19',
+                    'TERMINAL_LABEL' => 'A01',
                     'MERCHANT_COUNTRY' => 'ID',
                     'QRIS_MERCHANT_DOMESTIC_ID' => $id_domestic,
                     'TYPE_QR' => 'STATIS',
@@ -159,8 +159,8 @@ class MerchantController extends Controller
                     'MERCHANT_EXP' => '900',
                     'MERCHANT_CODE' => genID(5, true),
                     'MERCHANT_ADDRESS' => $request->address,
-                    'STATUS' => '1',
-                    'NMID' => $nmid,
+                    'STATUS' => '0',
+                    'NMID' => $request->nmid,
                     'ACCOUNT_NUMBER' => $request->norek,
                     'KTP' => $request->ktp,
                     'NPWP' => $request->npwp,
@@ -254,8 +254,8 @@ class MerchantController extends Controller
 
                     // Adding actual data at row 5
                     $data = [
-                        'A5' => '1', 'B5' => $nmid, 'C5' => $request->merchant, 'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
-                        'E5' => $nns . $request->norek, 'F5' => $nmid, 'G5' => $request->city, 'H5' => $request->postalcode, 'I5' => $request->criteria,
+                        'A5' => '1', 'B5' => $request->nmid, 'C5' => $request->merchant, 'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
+                        'E5' => $request->mpan, 'F5' => $request->mid, 'G5' => $request->city, 'H5' => $request->postalcode, 'I5' => $request->criteria,
                         'J5' => $request->mcc, 'K5' => '1', 'L5' => $request->merchantTipe, 'M5' => $request->npwp, 'N5' => $request->ktp, 'O5' => $request->qrType
                     ];
 
@@ -273,46 +273,7 @@ class MerchantController extends Controller
                     }
 
 
-                    // switch (env('APP_ENV')) {
-                    //     case 'local':
-                    //         $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
-                    //         break;
-                    //     case 'dev':
-                    //         $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
-                    //         break;
-                    //     case 'prod':
-                    //         $userId = Auth::id();
 
-                    //         $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
-                    //             ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
-                    //             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-                    //             ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
-
-                    //         if ($userId != 1) {
-                    //             $query->where('users.id', $userId);
-                    //         }
-                    //         $datas = $query->get()->toArray();
-                    //         break;
-                    // }
-
-                    $dateNow = date('Ymd');
-                    $appEnv = getenv('APP_ENV');
-                    
-                    switch ($appEnv) {
-                        case 'prod':
-                            $storagePath = '/home/adam/test/KBBS_OUT/' . $dateNow;
-                            break;
-                        case 'dev':
-                            $storagePath = '/home/adam/test/KBBS_OUT_DEV/' . $dateNow;
-                            break;
-                        case 'local':
-                            $storagePath = null;
-                            break;
-                        default:
-                            // Jika environment tidak sesuai, mungkin Anda ingin menambahkan logging atau menghentikan eksekusi
-                            die('Invalid environment.');
-                    }
-                    
                     function getNextBatchNumber($storagePath, $dateNow) {
                         $batchNumber = 1;
                         while (file_exists($storagePath . '/QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
@@ -320,9 +281,25 @@ class MerchantController extends Controller
                         }
                         return $batchNumber;
                     }
-                    
+
+                    $appEnv = getenv('APP_ENV');
+                    $dateNow = date('Ymd');
+                    $baseDir = '/home/share/test/KBBS_OUT/';
+                    $baseDir2 = '/home/adam/test/KBBS_OUT/';
+                    $folderName = $dateNow;
+                    $storagePath = $baseDir . $folderName;
+
+                    // Mengecek dan membuat direktori jika belum ada
+                    if (!file_exists($storagePath)) {
+                        if (!mkdir($storagePath, 0775, true)) {
+                            // Jika pembuatan direktori gagal, catat error dan kirim response error
+                            error_log("Failed to create directory at $storagePath");
+                            return response()->json(['error' => 'Failed to create directory'], 500);
+                        }
+                    }
+
                     if ($appEnv === 'local') {
-                        // Download file untuk environment local
+                        // Logika download file untuk environment local
                         $batchNumber = 1;
                         $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
                         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -330,30 +307,22 @@ class MerchantController extends Controller
                         $writer = new Xlsx($spreadsheet);
                         $writer->save('php://output');
                         exit;
+                    } else if ($appEnv === 'dev') {
+                        // Simpan file ke disk untuk environment prod dan dev
+                        $batchNumber = getNextBatchNumber($storagePath, $dateNow);
+                        $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
+                        $path = $storagePath . '/' . $filename;
+                        $writer = new Xlsx($spreadsheet);
+                        $writer->save($path);
+                    
                     } else {
                         // Simpan file ke disk untuk environment prod dan dev
-                        if (!file_exists($storagePath)) {
-                            mkdir($storagePath, 0777, true);
-                        }
-                    
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_9360052_' . $dateNow . '_batch' . $batchNumber . '.xlsx';
                         $path = $storagePath . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
-                    
-
-                    // // Save Excel to disk
-                    // $dateNow = date('Ymd');
-                    // $writer = new Xlsx($spreadsheet);
-                    // $filename = 'QRIS_NMR_9360052_' . $dateNow . '.xlsx';
-                    // // $filename = $nmid . '_1.xlsx'; QRIS_NMR_93600521_20240619
-                    // $writer->save($filename);
-
-                    // // Opsional: Kirim file sebagai respons download
-                    // $file_path = public_path($filename);
-                    // return response()->download($file_path)->deleteFileAfterSend(true);
                 }
 
                 return redirect()
@@ -451,19 +420,6 @@ class MerchantController extends Controller
             // $merchant = Merchant::findOrFail($id);
             $merchant->update($validatedData);
 
-            // $merchant->update($request->all());
-
-
-            // $data_detail = [
-            //     'MERCHANT_ID' => $merchant_id,
-            //     'DOMAIN' => $domain,
-            //     'TAG' => '26',
-            //     'MPAN' => $nns . $request->norek,
-            //     'MID' => $nmid,
-            //     'CRITERIA' => $request->criteria,
-            // ];
-            // $merchant_detail = MerchantDetails::create($data_detail);
-
             $date = date('Y-m-d H:i:s');
             $nmid = 'ID' . genID(13);
             $nns = '93600521';
@@ -539,6 +495,7 @@ class MerchantController extends Controller
             if ($hasilCek['rc'] != '0000') {
                 return response()->json([
                     'error' => 'Nomor Rekening tidak valid',
+                    'rc' => $hasilCek['rc']
                 ]);
             }
 
@@ -607,34 +564,20 @@ class MerchantController extends Controller
 
         $mcc = Mcc::orderBy('DESC_MCC')
             ->get();
-        // ->toArray();
-
-
-
-        // $merchants = $mcc->paginate(5); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.categories', ['mcc' => $mcc]);
     }
 
     public function categoriesCreate()
     {
-        // $mcc = Mcc::orderBy('DESC_MCC')
-        //     ->get()
-        //     ->toArray();
-        // $criteria = getCriteria();
-        // $prov = getWilayah();
-
         return view('merchant.categoriesCreate');
     }
 
     public function categoriesEdit($ID)
     {
-
-        // dd($ID);
         $id = Crypt::decrypt($ID);
         $mcc = Mcc::where('id', $id)->first();
 
-        // dd($mcc);
         return view('merchant.categoriesEdit', compact('mcc'));
     }
 }
