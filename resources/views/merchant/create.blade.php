@@ -43,12 +43,21 @@
                                 </div>
                             </div>
 
-
                             <div class="form-group col-6">
-                                <label>Nama Merchant</label>
-                                <input type="text" class="form-control" name="merchant" id="merchant"
-                                    value="{{ old('merchant') }}" required>
+                                <label>Cabang</label>
+                                <select class="form-control" name="cabang" id="cabang" required>
+                                    <!-- Opsi default -->
+                                    <option value="">- Pilih Cabang -</option>
+
+                                    @foreach ($cabangs as $cabang)
+                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}"
+                                            data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
+                                            {{ $cabang->CPC_MC_NAMA }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
+
 
                             <div class="form-group col-6">
                                 <label>MID</label>
@@ -65,11 +74,10 @@
                             </div>
 
                             <div class="form-group col-6">
-                                <label>NMID</label>
-                                <input type="text" class="form-control" name="nmid" id="nmid"
-                                    value="{{ old('nmid') }}">
+                                <label>Nama Merchant</label>
+                                <input type="text" class="form-control" name="merchant" id="merchant"
+                                    value="{{ old('merchant') }}" required>
                             </div>
-
 
                             <div class="form-group col-6">
                                 <label>MPAN</label>
@@ -83,20 +91,11 @@
                                 </div>
                             </div>
 
-
                             <div class="form-group col-6">
-                                <label>Cabang</label>
-                                <select class="form-control" name="cabang" id="cabang" required>
-                                    @foreach ($cabangs as $cabang)
-                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}"
-                                            data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
-                                            {{ $cabang->CPC_MC_NAMA }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label>NMID</label>
+                                <input type="text" class="form-control" name="nmid" id="nmid"
+                                    value="{{ old('nmid') }}">
                             </div>
-
-
 
                             <div class="form-group col-6">
                                 <label>Tipe Merchant</label>
@@ -274,6 +273,12 @@
             var kodeLokasi = selectedCabang.options[selectedCabang.selectedIndex].getAttribute('data-lokasi');
             var statusIndicator = document.getElementById('midStatus'); // Pastikan elemen ini ada di HTML
 
+            // Periksa apakah cabang sudah terpilih
+            if (!kodeCabang) {
+                alert('Silakan pilih cabang terlebih dahulu.');
+                return; // Hentikan eksekusi fungsi lebih lanjut
+            }
+
             statusIndicator.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5em;"></i>';
 
             $.ajax({
@@ -303,28 +308,13 @@
             });
         }
 
-        function generateMpan() {
-            var mid = document.getElementById('mid').value;
-            if (mid) {
-                // NNS + "0" + MID
-                var nns = '93600521'; // Contoh NNS, sesuaikan dengan kebutuhan Anda
-                var baseMpan = nns + "0" + mid;
-
-                // Menghitung Luhn digit dan menambahkannya di akhir
-                var luhnDigit = calculateLuhn(baseMpan);
-                var mpan = baseMpan + luhnDigit;
-
-                document.getElementById('mpan').value = mpan;
-            } else {
-                alert('MID belum dihasilkan. Silakan generate MID terlebih dahulu.');
-            }
-        }
 
         function calculateLuhn(input) {
             let sum = 0;
-            let shouldDouble = false; // Mulai dari kanan, double setiap digit kedua
-            for (let i = input.length - 1; i >= 0; i--) {
-                let digit = parseInt(input.charAt(i));
+            let shouldDouble = (input.length % 2 === 0); // Menyesuaikan dengan panjang input
+
+            for (let i = 0; i < input.length; i++) {
+                let digit = parseInt(input.charAt(i), 10);
 
                 if (shouldDouble) {
                     digit *= 2;
@@ -339,6 +329,50 @@
 
             let checkDigit = (10 - (sum % 10)) % 10;
             return checkDigit;
+        }
+
+        function calculateLuhn(digits) {
+            let sum = 0;
+            let shouldDouble = (digits.length % 2 === 0);
+
+            console.log("Starting Luhn calculation for digits:", digits);
+            for (let i = digits.length - 1; i >= 0; i--) {
+                let digit = parseInt(digits.charAt(i), 10);
+                console.log("Original digit:", digit, "Position:", i);
+
+                if (shouldDouble) {
+                    digit *= 2;
+                    console.log("Doubled digit:", digit);
+                    if (digit > 9) {
+                        digit -= 9;
+                        console.log("Reduced doubled digit:", digit);
+                    }
+                }
+                sum += digit;
+                console.log("Running sum:", sum);
+                shouldDouble = !shouldDouble;
+            }
+
+            let checkDigit = (10 - (sum % 10)) % 10;
+            console.log("Final sum:", sum, "Check digit:", checkDigit);
+            return checkDigit;
+        }
+
+        // Kode untuk menguji fungsi generateMpan
+        function generateMpan() {
+            var mid = document.getElementById('mid').value;
+            if (mid) {
+                var nns = '93600521';
+                var baseMpan = nns + "0" + mid;
+                // var baseMpan = '936005210040100006';
+
+                var luhnDigit = calculateLuhn(baseMpan);
+                var mpan = baseMpan + luhnDigit;
+
+                document.getElementById('mpan').value = mpan;
+            } else {
+                alert('MID belum dihasilkan. Silakan generate MID terlebih dahulu.');
+            }
         }
     </script>
 @endsection

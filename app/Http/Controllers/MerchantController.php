@@ -258,16 +258,16 @@ class MerchantController extends Controller
                         'B5' => $request->nmid, 
                         'C5' => $request->merchant, 
                         'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
-                        'E5' => "'" . $request->mpan . "'",  // Menambahkan tanda kutip pada MPAN
+                        'E5' => "'" . $request->mpan ,  // Menambahkan tanda kutip pada MPAN
                         'F5' => $request->mid, 
                         'G5' => $request->city, 
                         'H5' => $request->postalcode, 
                         'I5' => $request->criteria,
                         'J5' => $request->mcc, 
                         'K5' => '1', 
-                        'L5' => $request->merchantType, 
-                        'M5' => "'" . $request->npwp . "'",  // Menambahkan tanda kutip pada NPWP
-                        'N5' => "'" . $request->ktp . "'",   // Menambahkan tanda kutip pada KTP
+                        'L5' => $request->merchantTipe, 
+                        'M5' => "'" . $request->npwp ,  // Menambahkan tanda kutip pada NPWP
+                        'N5' => "'" . $request->ktp ,   // Menambahkan tanda kutip pada KTP
                         'O5' => $request->qrType
                     ];
 
@@ -347,7 +347,7 @@ class MerchantController extends Controller
                         // Simpan file ke disk untuk environment prod dan dev
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                        $path = $storagePath . '/' $filename;
+                        $path = $storagePath . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
@@ -374,7 +374,8 @@ class MerchantController extends Controller
             ->toArray();
         $criteria = getCriteria();
         $merchant = Merchant::where('id', $id)->first();
-        return view('merchant.show', compact('mcc', 'criteria', 'merchant'));
+        $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
+        return view('merchant.show', compact('mcc', 'criteria', 'merchant', 'merchant_detail'));
     }
 
 

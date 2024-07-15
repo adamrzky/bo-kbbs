@@ -35,6 +35,18 @@
         </div>
         <div class="col-xs-12 col-sm-12 col-md-12">
             <div class="form-group">
+                <strong>MPAN:</strong>
+                {{ $merchant_detail->MPAN }}
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12">
+            <div class="form-group">
+                <strong>MID:</strong>
+                {{ $merchant_detail->MID }}
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12">
+            <div class="form-group">
                 <strong>Merchant City:</strong>
                 {{ $merchant->MERCHANT_CITY }}
             </div>
