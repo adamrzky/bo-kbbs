@@ -50,6 +50,7 @@ class MerchantController extends Controller
         $userId = $getUserId;
 
         $query = DB::table('QRIS_MERCHANT')
+            ->distinct()
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->select('QRIS_MERCHANT.*');

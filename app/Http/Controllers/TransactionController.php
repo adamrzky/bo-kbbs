@@ -112,6 +112,7 @@ class TransactionController extends Controller
                     $userId = Auth::id();
 
                     $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+                        ->distinct()
                         ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
                         ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
                         ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
