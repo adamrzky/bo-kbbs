@@ -1,31 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', 'Dashboard')
-
-
-@section('css')
-    <link rel="stylesheet" href="/css/admin_custom.css">
-@stop
-
-@section('js')
-    <script>
-        console.log('Hi!');
-    </script>
-@stop
-
+@section('title', 'Edit Merchant')
 
 @section('content')
-    <div class="row">
-        <div class="col-lg-12 margin-tb">
-            <div class="pull-left">
-                <h2>Edit Merchant </h2>
-            </div>
-            <div class="pull-right">
-
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Edit Merchant Details</h1>
+                </div>
             </div>
         </div>
-    </div>
-
+    </section>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -38,71 +24,113 @@
         </div>
     @endif
 
-
-
     <form action="{{ route('merchant.update', $merchant->ID) }}" method="POST">
         @csrf
         @method('PUT')
-
         <div class="row">
-            <div class="col-xs-12 col-sm-12 col-md-12">
-                <div class="form-group">
+            <div class="col-md-12">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label>NMID</label>
+                                <input type="text" class="form-control" name="NMID"
+                                    value="{{ $merchant_detail->NMID }}" readonly>
+                            </div>
 
-                    <strong>MERCHANT_ID:</strong>
-                     <input type="text" name="ID" value="{{ $merchant->ID }}" class="form-control col-3" readonly>
-                    <strong>Merchant City:</strong>
-                    <input name="MERCHANT_CITY" value="{{ $merchant->MERCHANT_CITY }}" class="form-control col-3">
-                    <strong>Name:</strong>
-                    <input type="text" name="MERCHANT_NAME" value="{{ $merchant->MERCHANT_NAME }}"
-                        class="form-control col-3">
-                    <strong>Kode Pos:</strong>
-                    <input type="text" name="POSTAL_CODE" value="{{ $merchant->POSTAL_CODE }}"
-                        class="form-control col-3">
-                    <strong>Merchant Curency:</strong>
-                    <input type="text" name="MERCHANT_CURRENCY_CODE" value="{{ $merchant->MERCHANT_CURRENCY_CODE }}"
-                        class="form-control col-3">
-                    <strong>Terminal Label:</strong>
-                    <input type="text" name="TERMINAL_LABEL" value="{{ $merchant->TERMINAL_LABEL }}"
-                        class="form-control col-3">
-                    <strong>MERCHANT_CODE:</strong>
-                    <input type="text" name="MERCHANT_CODE" value="{{ $merchant->MERCHANT_CODE }}"
-                        class="form-control col-3">
-                    <strong>MERCHANT_COUNTRY:</strong>
-                    <input type="text" name="MERCHANT_COUNTRY" value="{{ $merchant->MERCHANT_COUNTRY }}"
-                        class="form-control col-3">
-                    <strong>QRIS_MERCHANT_DOMESTIC_ID:</strong>
-                    <input type="text" name="QRIS_MERCHANT_DOMESTIC_ID"
-                        value="{{ $merchant->QRIS_MERCHANT_DOMESTIC_ID }}" class="form-control col-3">
-                    <strong>TYPE_QR:</strong>
-                    <input type="text" name="TYPE_QR" value="{{ $merchant->TYPE_QR }}" class="form-control col-3">
-                    <strong>MERCHANT_TYPE:</strong>
-                    <input type="text" name="MERCHANT_TYPE" value="{{ $merchant->MERCHANT_TYPE }}"
-                        class="form-control col-3">
-                    <strong>REKENING_NUMBER:</strong>
-                    <input type="text" name="ACCOUNT_NUMBER" value="{{ $merchant->ACCOUNT_NUMBER }}"
-                        class="form-control col-3">
-                    {{-- <strong>CATEGORY:</strong>
-                     <input type="text" name="CATEGORY" value="{{ $merchant->CATEGORY }}" class="form-control col-3"         
-                    <strong>CRITERIA:</strong>
-                     <input type="text" name="CRITERIA" value="{{ $merchant->CRITERIA }}" class="form-control col-3" > --}}
-                    <strong>STATUS:</strong>
-                    <input type="number" name="STATUS" value="{{ $merchant->STATUS }}" class="form-control col-3">
-                    <strong>MERCHANT_ADDRESS:</strong>
-                    <input type="text" name="MERCHANT_ADDRESS" value="{{ $merchant->MERCHANT_ADDRESS }}"
-                        class="form-control col-3">
-                </div>
-                <div class="col-xs-12 col-sm-12 col-md-12 text-center">
-                    <a class="btn btn-primary" href="{{ route('merchant.index') }}"> Cancel </a>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                            <div class="form-group col-6">
+                                <label>Nama Merchant (max 50)</label>
+                                <input type="text" class="form-control" name="MERCHANT_NAME"
+                                    value="{{ $merchant->MERCHANT_NAME }}" required>
+                            </div>
 
+                            <div class="form-group col-6">
+                                <label>MPAN</label>
+                                <input type="text" class="form-control" name="MPAN"
+                                    value="{{ $merchant_detail->MPAN }}" readonly>
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>MID</label>
+                                <input type="text" class="form-control" name="MID"
+                                    value="{{ $merchant_detail->MID }}" readonly>
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Kota</label>
+                                <input type="text" class="form-control" name="MERCHANT_CITY"
+                                    value="{{ $merchant->MERCHANT_CITY }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Kodepos</label>
+                                <input type="text" class="form-control" name="POSTAL_CODE"
+                                    value="{{ $merchant->POSTAL_CODE }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Kriteria Merchant</label>
+                                <select class="form-control" name="criteria" id="criteria" required>
+                                    @foreach ($criteria as $option)
+                                        <option value="{{ $option['id'] }}" {{ $merchant_detail->CRITERIA == $option['id'] ? 'selected' : '' }}>
+                                            {{ $option['id'] }} - {{ $option['desc'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Kategori Merchant (MCC)</label>
+                                <select class="form-control" name="mcc" id="mcc" required>
+                                    @foreach ($mcc as $dropdown)
+                                        <option value="{{ $dropdown['CODE_MCC'] }}"
+                                            {{ $merchant_domestic->MCC == $dropdown['CODE_MCC'] ? 'selected' : '' }}>
+                                            {{ $dropdown['CODE_MCC'] }} - {{ $dropdown['DESC_MCC'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+
+
+                            <div class="form-group col-6">
+                                <label>Jumlah Terminal</label>
+                                <input type="number" class="form-control" name="JML_TERMINAL" value="1" readonly>
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Tipe Merchant</label>
+                                <input type="text" class="form-control" name="MERCHANT_TYPE"
+                                    value="{{ $merchant->MERCHANT_TYPE }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>NPWP</label>
+                                <input type="text" class="form-control" name="NPWP" value="{{ $merchant->NPWP }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>KTP</label>
+                                <input type="text" class="form-control" name="KTP" value="{{ $merchant->KTP }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Tipe QR</label>
+                                <select class="form-control" name="qrType" id="qrType" required>
+                                    <option value="D" {{ $merchant->qrType == 'D' ? 'selected' : '' }}>Dinamis</option>
+                                    <option value="S" {{ $merchant->qrType == 'S' ? 'selected' : '' }}>Statis</option>
+                                    <option value="B" {{ $merchant->qrType == 'B' ? 'selected' : '' }}>Statis & Dinamis</option>
+                                </select>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-info" href="{{ route('merchant.index') }}">Back</a>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </div>
+                </div>
             </div>
-
         </div>
-
-
     </form>
-
-
-
 @endsection

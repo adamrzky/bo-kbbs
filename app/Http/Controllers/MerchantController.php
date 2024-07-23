@@ -259,20 +259,20 @@ class MerchantController extends Controller
 
                     // Adding actual data at row 5
                     $data = [
-                        'A5' => '1', 
-                        'B5' => $request->nmid, 
-                        'C5' => $request->merchant, 
+                        'A5' => '1',
+                        'B5' => $request->nmid,
+                        'C5' => $request->merchant,
                         'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
-                        'E5' => "'" . $request->mpan ,  // Menambahkan tanda kutip pada MPAN
-                        'F5' => $request->mid, 
-                        'G5' => $request->city, 
-                        'H5' => $request->postalcode, 
+                        'E5' => "'" . $request->mpan,  // Menambahkan tanda kutip pada MPAN
+                        'F5' => $request->mid,
+                        'G5' => $request->city,
+                        'H5' => $request->postalcode,
                         'I5' => $request->criteria,
-                        'J5' => $request->mcc, 
-                        'K5' => '1', 
-                        'L5' => $request->merchantTipe, 
-                        'M5' => "'" . $request->npwp ,  // Menambahkan tanda kutip pada NPWP
-                        'N5' => "'" . $request->ktp ,   // Menambahkan tanda kutip pada KTP
+                        'J5' => $request->mcc,
+                        'K5' => '1',
+                        'L5' => $request->merchantTipe,
+                        'M5' => "'" . $request->npwp,  // Menambahkan tanda kutip pada NPWP
+                        'N5' => "'" . $request->ktp,   // Menambahkan tanda kutip pada KTP
                         'O5' => $request->qrType
                     ];
 
@@ -310,26 +310,26 @@ class MerchantController extends Controller
                         default:
                             die('Invalid environment.');
                     }
-                    
+
                     function getNextBatchNumber($storagePath, $dateNow)
                     {
                         $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
                         $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
-                    
+
                         // Jika file tanpa batch sudah ada, mulai cek dari batch 2
                         if ($firstFileExists) {
                             $batchNumber = 2;
                         }
-                    
+
                         // Mengecek keberadaan file dengan nama batch selanjutnya
                         while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                             $batchNumber++;
                         }
-                    
+
                         return $batchNumber;
                     }
-                    
-                    
+
+
                     if ($appEnv === 'local') {
                         // Logika download file untuk environment local
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
@@ -348,7 +348,7 @@ class MerchantController extends Controller
                                 return response()->json(['error' => 'Failed to create directory'], 500);
                             }
                         }
-                    
+
                         // Simpan file ke disk untuk environment prod dan dev
                         $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
@@ -356,8 +356,6 @@ class MerchantController extends Controller
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                     }
-                    
-                    
                 }
 
                 return redirect()
@@ -388,7 +386,13 @@ class MerchantController extends Controller
     {
         $id = Crypt::decrypt($id);
         $merchant = Merchant::where('id', $id)->first();
-        return view('merchant.edit', compact('merchant'));
+        $mcc = Mcc::orderBy('DESC_MCC')
+            ->get()
+            ->toArray();
+        $criteria = getCriteria();
+        $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
+        $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
+        return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
     }
 
     /**
@@ -435,7 +439,7 @@ class MerchantController extends Controller
         } else {
 
             $data_merchant = [
-                'ID' => 'required',
+                'ID' => '',
                 'TERMINAL_LABEL' => 'required',
                 'MERCHANT_COUNTRY' => 'required',
                 'QRIS_MERCHANT_DOMESTIC_ID' => 'required',
@@ -451,23 +455,11 @@ class MerchantController extends Controller
                 'MERCHANT_ADDRESS' => 'required',
             ];
 
-            // dd($request);
+            dd($request);
             $validatedData = $request->validate($data_merchant);
             // $merchant = Merchant::findOrFail($id);
             $merchant->update($validatedData);
 
-            // $merchant->update($request->all());
-
-
-            // $data_detail = [
-            //     'MERCHANT_ID' => $merchant_id,
-            //     'DOMAIN' => $domain,
-            //     'TAG' => '26',
-            //     'MPAN' => $nns . $request->norek,
-            //     'MID' => $nmid,
-            //     'CRITERIA' => $request->criteria,
-            // ];
-            // $merchant_detail = MerchantDetails::create($data_detail);
 
             $date = date('Y-m-d H:i:s');
             $nmid = 'ID' . genID(13);
@@ -488,7 +480,7 @@ class MerchantController extends Controller
                 'MERCHANT_CURRENCY_CODE' => $request->merchant->MERCHANT_CURRENCY_CODE,
                 'MERCHANT_TYPE' => $request->merchant->MERCHANT_TYPE,
                 'MERCHANT_EXP' => $request->merchant->MERCHANT_EXP,
-                'MERCHANT_CODE' => '900',
+                'MERCHANT_CODE' => $request->merchant->MERCHANT_CODE,
                 'MERCHANT_ADDRESS' => $request->merchant->MERCHANT_ADDRESS,
                 'STATUS' => $request->merchant->STATUS,
                 'NMID' => $request->merchant->NMID,
@@ -505,7 +497,7 @@ class MerchantController extends Controller
 
             // dd($request->merchant);
 
-            $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
+            // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
 
             return redirect()
                 ->route('merchant.index')
