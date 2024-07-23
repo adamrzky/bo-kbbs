@@ -37,11 +37,11 @@ class QrisController extends Controller
         $userId = $getUserId;
 
         $query = DB::table('QRIS_MERCHANT')
-            // ->distinct()
+            ->distinct()
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-            ->select('QRIS_MERCHANT.*')
-            ->groupBy('QRIS_MERCHANT.ID');
+            ->select('QRIS_MERCHANT.*');
+            // ->groupBy('QRIS_MERCHANT.ID');
 
         if ($userId != 1) {
             $query->where('users.id', $userId);

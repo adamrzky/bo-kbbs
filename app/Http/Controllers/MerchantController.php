@@ -90,6 +90,7 @@ class MerchantController extends Controller
     public function store(Request $request)
     {
 
+        //ADD MCC
         if ($request['merchantType']) {
 
             // dd($request);
@@ -125,10 +126,10 @@ class MerchantController extends Controller
                 'mid' => 'required',
             ]);
 
-            $cek = $this->cekNorek($request->norek);
-            if ($cek['rc'] != '0000') {
-                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            }
+            // $cek = $this->cekNorek($request->norek);
+            // if ($cek['rc'] != '0000') {
+            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            // }
 
             // dd($request);
 
@@ -165,6 +166,9 @@ class MerchantController extends Controller
                     'ACCOUNT_NUMBER' => $request->norek,
                     'KTP' => $request->ktp,
                     'NPWP' => $request->npwp,
+                    'USER_ID_MOBILE' => $request->idMobile,
+                    'PHONE_MOBILE' => $request->phone,
+                    'EMAIL_MOBILE' => $request->email,
                 ];
 
                 $merchants = Merchant::create($data_merchant);

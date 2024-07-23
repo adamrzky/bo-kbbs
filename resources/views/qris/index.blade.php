@@ -61,7 +61,7 @@
                                 <select class="form-control select" name="TYPE" id="TYPE" required
                                     onchange="checkQRType()">
                                     <option value="DINAMIS">DINAMIS</option>
-                                    <option value="STATIS">STATIS</option>
+                                    {{-- <option value="STATIS">STATIS</option> --}}
                                 </select>
                             </div>
                             <div class="form-group col-6">
