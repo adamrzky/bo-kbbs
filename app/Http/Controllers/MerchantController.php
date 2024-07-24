@@ -139,7 +139,8 @@ class MerchantController extends Controller
                     'MCC' => $request->mcc,
                     'CRITERIA' => $request->criteria,
                 ];
-                $id_domestic = MerchantDomestic::create($data_domestic)->id;
+                $merchantDomestic = MerchantDomestic::create($data_domestic);
+                $id_domestic = $merchantDomestic->ID;
 
                 $data_merchant = [
                     'CREATED_AT' => $date,
