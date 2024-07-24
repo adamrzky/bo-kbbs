@@ -721,7 +721,7 @@ class MerchantController extends Controller
 
 
                 return redirect()
-                    ->route('merchant.edit')
+                    ->route('merchant.index')
                     ->with('success', 'Merchant updated successfully');
             }
         }
