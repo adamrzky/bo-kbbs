@@ -235,7 +235,7 @@
                     select.append(new Option('-', '')); // Menambahkan option default
 
                     $.each(res, function(index, item) {
-                        var option = new Option(item.KOTA, item.KODE);
+                        var option = new Option(item.KOTA);
                         select.append($(option));
                     });
                 },

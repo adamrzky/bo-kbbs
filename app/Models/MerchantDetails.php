@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MerchantDetails extends Model
 {
     protected $table = 'QRIS_MERCHANT_DETAILS';
+    protected $primaryKey = 'ID';
     public $timestamps = false;
        
     /**
