@@ -68,7 +68,7 @@
                             <div class="form-group col-6">
                                 <label>NMID</label>
                                 <input type="text" class="form-control" name="NMID"
-                                    value="{{ $merchant_detail->NMID }}" readonly>
+                                    value="{{ $merchant->NMID }}" readonly>
                             </div>
 
                             <div class="form-group col-6">
