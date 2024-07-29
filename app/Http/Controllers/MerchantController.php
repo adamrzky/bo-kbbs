@@ -8,6 +8,8 @@ use App\Models\MerchantDetails;
 use App\Models\MerchantDomestic;
 use App\Models\UserMerchant;
 use App\Models\Cabang;
+use App\User;
+use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
@@ -17,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -126,7 +130,20 @@ class MerchantController extends Controller
             //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
             // }
 
-            // dd($request);
+            
+            $data_user = [
+                'name' => $request->email,
+                'email' => $request->email,
+                'password' => Hash::make('1234qwer'),
+            ];
+            $user = User::create($data_user);
+            $user->assignRole($request->roles);
+
+            Log::channel('merchant')->info('REQ : ' .  json_encode($data_user));
+            Log::channel('merchant')->info('RESP : ' . $user);
+            
+            dd($user);
+            dd($request->roles);
 
             try {
                 $date = date('Y-m-d H:i:s');

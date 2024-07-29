@@ -33,6 +33,9 @@
                     <div class="card-body">
                         <div class="row">
 
+                            <input type="text" class="form-control" name="roles" id="roles"
+                            value="Merchant" hidden readonly>
+
                             <div class="form-group col-6">
                                 <label>Email</label>
                                 <input type="text" class="form-control" name="email" id="email"
