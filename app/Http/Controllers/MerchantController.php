@@ -142,8 +142,8 @@ class MerchantController extends Controller
             Log::channel('merchant')->info('REQ : ' .  json_encode($data_user));
             Log::channel('merchant')->info('RESP : ' . $user);
             
-            dd($user);
-            dd($request->roles);
+            // dd($user);
+            // dd($request->roles);
 
             try {
                 $date = date('Y-m-d H:i:s');
