@@ -116,6 +116,16 @@ class TransactionController extends Controller
                         $merchant = Merchant::where('ID', $value['MERCHANT_ID'])->first();
                         $data[$key]['MERCHANT'] = $merchant ? $merchant->toArray() : null;
                     }
+
+                    $nns = Nns::where('NNS', $value['ISSUING_INSTITUTION_NAME'])->first();
+                        // dd($nns->toArray());
+                        if ($nns != '') {
+                            // dd($nns);
+                            // dd($data[$key]['NNS']['NAME']);
+                            $data[$key]['NNS'] = $nns['NAME'];
+                        } else {
+                            $data[$key]['NNS'] = $nns;
+                        }
                     break;
 
                 case 'prod':
