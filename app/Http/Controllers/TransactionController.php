@@ -93,6 +93,16 @@ class TransactionController extends Controller
                         } else {
                             $data[$key]['MERCHANT'] = $merchant;
                         }
+
+                        $nns = Nns::where('NNS', $value['ISSUING_INSTITUTION_NAME'])->first();
+                        // dd($nns->toArray());
+                        if ($nns != '') {
+                            // dd($nns);
+                            // dd($data[$key]['NNS']['NAME']);
+                            $data[$key]['NNS'] = $nns['NAME'];
+                        } else {
+                            $data[$key]['NNS'] = $nns;
+                        }
                     }
 
                     // dd($filteredData);
@@ -135,6 +145,7 @@ class TransactionController extends Controller
                     return $createdAt >= $startDate && $createdAt <= $endDate;
                 });
             }
+
 
             // dd($data);
             return DataTables::of($data)
@@ -223,6 +234,9 @@ class TransactionController extends Controller
 
             if ($data['ID'] == $idString) {
 
+                $data['AMOUNT_MDR'] = '';
+                $data['PAID_AT'] = '';
+
                 return response()->json([
 
                     'MERCHANT_ACC_NUMBER'           =>   $data['MERCHANT_ACC_NUMBER'],
@@ -262,6 +276,7 @@ class TransactionController extends Controller
                     'BIT_2'                  =>   $data['BIT_2'],
                     'CURRENT_AMOUNT_REFUND'                  =>   $data['CURRENT_AMOUNT_REFUND'],
                     'MPAN'                  =>   $data['MPAN'],
+                    'AMOUNT_MDR'            => $data['AMOUNT_MDR'],
                     'PAID_AT'                  =>   $data['PAID_AT'],
 
                 ]);

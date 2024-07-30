@@ -13,7 +13,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>List Transaction</h1>
+                    <h1>Transaction Report</h1>
                 </div>
             </div>
         </div>
@@ -294,16 +294,19 @@
             <thead>
                 <tr>
                     <th>NO</th>
-                    <th>TRANSACTION_ID</th>
-                    <th>MERCHANT_ID</th>
-                    <th>EXPIRE_DATE_TIME</th>
-                    <th>CREATED_AT</th>
-                    <th>FEE_AMOUNT</th>
-                    <th>STATUS_TRANSFER</th>
+                    {{-- <th>TRANSACTION_ID</th> --}}
+                    <th>MERCHANT NAME</th>
+                    {{-- <th>EXPIRE_DATE_TIME</th> --}}
+                    <th>PAID DATE</th>
+                    {{-- <th>FEE_AMOUNT</th> --}}
+                    {{-- <th>STATUS_TRANSFER</th> --}}
                     <th>RRN</th>
                     <th>AMOUNT</th>
                     <th>AMOUNT_REFUND</th>
+                    <th>AMOUNT_MDR</th>
                     <th>QR Type</th>
+                    <th>ACQUIRING_INSTITUTION_NAME</th>
+                    <th>ISSUING_CUSTOMER_NAME</th>
                     {{-- <th>SHOW</th> --}}
                     <th>STATUS</th>
                 </tr>
@@ -349,27 +352,28 @@
                 ],
                 columns: [{
                         render: function(data, type, row, meta) {
+                            console.log(row)
                             return meta.row + meta.settings._iDisplayStart + 1;
                         },
                     },
+                    // {
+                    //     data: 'TRANSACTION_ID'
+                    // },
                     {
-                        data: 'TRANSACTION_ID'
+                        data: 'MERCHANT.MERCHANT_NAME'
                     },
-                    {
-                        data: 'MERCHANT_ID'
-                    },
-                    {
-                        data: 'EXPIRE_DATE_TIME'
-                    },
+                    // {
+                    //     data: 'EXPIRE_DATE_TIME'
+                    // },
                     {
                         data: 'CREATED_AT'
                     },
-                    {
-                        data: 'FEE_AMOUNT'
-                    },
-                    {
-                        data: 'STATUS_TRANSFER'
-                    },
+                    // {
+                    //     data: 'FEE_AMOUNT'
+                    // },
+                    // {
+                    //     data: 'STATUS_TRANSFER'
+                    // },
                     {
                         data: 'RETRIEVAL_REFERENCE_NUMBER'
                     },
@@ -386,10 +390,24 @@
                         }
                     },
                     {
+                        data: 'AMOUNT_MDR',
+                        // render: function(data, type, row) {
+                        //     return new Intl.NumberFormat('id-ID').format(data);
+                        // }
+                    },
+                    {
                         data: 'QR_TYPE',
                         render: function(data, type, row, meta) {
                             return data === 11 ? 'static' : data === 12 ? 'dynamic' : '';
                         },
+                    },
+                    {
+                        data: 'NNS'
+                       
+                    },
+                    {
+                        data: 'ISSUING_CUSTOMER_NAME'
+                        
                     },
                     // {
                     //     render: function(data, type, row, meta) {
@@ -462,6 +480,8 @@
             var url = "{{ route('transactions.detail', ':id') }}";
             url = url.replace(':id', id);
 
+            console.log(url)
+
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -495,7 +515,6 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-			console.log(data)
 
                     let time = data.bit_12.substring(0, 2) + ':' + data.bit_12.substring(2, 4) + ':' + data.bit_12
                         .substring(4, 6) + ' ' + data.PAID_AT.substring(0, 10);
