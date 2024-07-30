@@ -352,7 +352,7 @@
                     'csv', 'excel', 'print'
                 ],
                 order: [
-                    [4, 'desc']
+                    [2, 'desc']
                 ],
                 columns: [{
                         render: function(data, type, row, meta) {
