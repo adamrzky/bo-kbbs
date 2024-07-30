@@ -8,6 +8,7 @@ use App\Models\MerchantDetails;
 use App\Models\MerchantDomestic;
 use App\Models\UserMerchant;
 use App\Models\Cabang;
+use App\Models\Criteria;
 use App\User;
 use Hash;
 use Illuminate\Http\Request;
@@ -78,7 +79,10 @@ class MerchantController extends Controller
         $mcc = Mcc::orderBy('DESC_MCC')
             ->get()
             ->toArray();
-        $criteria = getCriteria();
+        // $criteria = getCriteria();
+        $criteria = Criteria::orderBy('NO')
+            ->get()
+            ->toArray();
         $prov = getWilayah();
         $cabangs = Cabang::all();
 

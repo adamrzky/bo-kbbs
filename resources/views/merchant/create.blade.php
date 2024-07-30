@@ -174,8 +174,8 @@
                                     <label>Kriteria Merchant (Criteria)</label>
                                     <select class="form-control" name="criteria" id="criteria" required>
                                         @foreach ($criteria as $dropdown)
-                                            <option value="{{ $dropdown['id'] }}">{{ $dropdown['id'] }} -
-                                                {{ $dropdown['desc'] }}</option>
+                                            <option value="{{ $dropdown['ID'] }}">{{ $dropdown['ID'] }} -
+                                                {{ $dropdown['DESC'] }}</option>
                                         @endforeach
                                     </select>
                                 </div>
