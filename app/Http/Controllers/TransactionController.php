@@ -69,17 +69,15 @@ class TransactionController extends Controller
 
         if ($request->ajax()) {
 
-            $dateRange = $request->date_range; // Format: 'YYYY-MM-DD - YYYY-MM-DD'
-            $startDate = null;
-            $endDate = null;
-
-            if (!empty($dateRange)) {
-                $dates = explode(' - ', $dateRange);
-                if (count($dates) == 2) {
-                    $startDate = trim($dates[0]);
-                    $endDate = trim($dates[1]) . ' 23:59:59'; // Tambahkan waktu di akhir hari untuk inklusi penuh
-                }
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            
+            if (!empty($startDate) && !empty($endDate)) {
+                $startDate = trim($startDate);
+                $endDate = trim($endDate) . ' 23:59:59'; // Tambahkan waktu di akhir hari untuk inklusi penuh
             }
+
+            
 
             switch (env('APP_ENV')) {
                 case 'local':
@@ -148,7 +146,6 @@ class TransactionController extends Controller
                     break;
             }
 
-            // Filter data berdasarkan rentang tanggal (di luar switch agar kode tidak duplikat)
             if ($startDate && $endDate) {
                 $data = array_filter($data, function ($item) use ($startDate, $endDate) {
                     $createdAt = $item['CREATED_AT'] ?? null;
@@ -157,6 +154,7 @@ class TransactionController extends Controller
             }
 
 
+            
             // dd($data);
             return DataTables::of($data)
 

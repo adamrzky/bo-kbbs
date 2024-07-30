@@ -22,9 +22,12 @@
     <!-- Filter and Export Buttons -->
     <div class="row mb-4">
         <div class="col-md-4">
-            <input type="text" id="date-range" class="form-control">
+            <input type="text" id="start-date" class="form-control" placeholder="Start Date">
         </div>
-        <div class="col-md-8 text-right">
+        <div class="col-md-4">
+            <input type="text" id="end-date" class="form-control" placeholder="End Date">
+        </div>
+        <div class="col-md-4 text-right">
             <button id="exportButton" class="btn btn-success">Export Data</button>
         </div>
     </div>
@@ -210,7 +213,7 @@
                         <input type="text" class="form-control" name="" id="" required
                             value="Bank KBBS" readonly>
                     </div>
-		    <div class="form-group col-12">
+                    <div class="form-group col-12">
                         <label>Merchant PAN</label>
                         <input type="text" class="form-control" name="MPAN_TRX" id="MPAN_TRX" required readonly>
                     </div>
@@ -340,7 +343,8 @@
                 ajax: {
                     url: "{{ route('transactions.data') }}",
                     data: function(d) {
-                        d.date_range = $('#date-range').val();
+                        d.start_date = $('#start-date').val();
+                        d.end_date = $('#end-date').val();
                     }
                 },
                 dom: 'Bfrtip', // Needed to show export options
@@ -403,11 +407,11 @@
                     },
                     {
                         data: 'NNS'
-                       
+
                     },
                     {
                         data: 'ISSUING_CUSTOMER_NAME'
-                        
+
                     },
                     // {
                     //     render: function(data, type, row, meta) {
@@ -449,22 +453,30 @@
                 ]
             });
 
-            // Inisialisasi Date Range Picker
-            $('#date-range').daterangepicker({
+            // Inisialisasi Date Picker untuk Start Date
+            $('#start-date').daterangepicker({
+                singleDatePicker: true,
                 locale: {
                     format: 'YYYY-MM-DD'
                 },
-                startDate: moment().startOf('month'),
-                endDate: moment().endOf('month')
+                autoUpdateInput: false
+            }, function(start) {
+                $('#start-date').val(start.format('YYYY-MM-DD'));
+                table.draw(); // Trigger the table redraw when the date is selected
             });
 
-            $('#date-range').on('apply.daterangepicker', function(ev, picker) {
-                table.draw();
+            // Inisialisasi Date Picker untuk End Date
+            $('#end-date').daterangepicker({
+                singleDatePicker: true,
+                locale: {
+                    format: 'YYYY-MM-DD'
+                },
+                autoUpdateInput: false
+            }, function(end) {
+                $('#end-date').val(end.format('YYYY-MM-DD'));
+                table.draw(); // Trigger the table redraw when the date is selected
             });
 
-            $('#exportButton').on('click', function() {
-                table.button('.buttons-excel').trigger();
-            });
         });
 
         function formatNumberWithThousandSeparator(number) {
