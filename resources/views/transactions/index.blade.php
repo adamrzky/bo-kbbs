@@ -429,27 +429,28 @@
                             if (row.TRANSFER_STATUS === 3 && row.RC_FUND == 68) {
                                 return '<div class="btn-group">' +
                                     '<button class="btn btn-sm btn-danger refund-btn" onclick="refundDetail(\'' +
-                                    row.ID + '\')">' +
-                                    '<span class="spinner-border spinner-border-sm d-none"></span>' +
+                                    row.ID + '\', this)">' +
+                                    '<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>' +
                                     'Suspect</button>' +
                                     '</div>';
                             } else if (row.TRANSFER_STATUS === 3 && row.RC_FUND == 00) {
                                 return '<div class="btn-group">' +
                                     '<button class="btn btn-sm btn-success refund-btn" onclick="refundDetail(\'' +
-                                    row.ID + '\')">' +
-                                    '<span class="spinner-border spinner-border-sm d-none"></span>' +
+                                    row.ID + '\', this)">' +
+                                    '<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>' +
                                     'Refund</button>' +
                                     '</div>';
                             } else {
                                 return '<div class="btn-group">' +
                                     '<button class="btn btn-sm btn-primary detail-btn" onclick="trxDetail(\'' +
-                                    row.ID + '\')">' +
-                                    '<span class="spinner-border spinner-border-sm d-none"></span>' +
+                                    row.ID + '\', this)">' +
+                                    '<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>' +
                                     'Detail</button>' +
                                     '</div>';
                             }
                         }
                     },
+
                 ]
             });
 
@@ -521,6 +522,10 @@
         }
 
         function trxDetail(id) {
+            var button = event.target;
+            button.disabled = true;
+            var spinner = button.querySelector('.spinner-border');
+            spinner.classList.remove('d-none');
             var url = "{{ route('transactions.detail', ':id') }}";
             url = url.replace(':id', id);
 
@@ -556,8 +561,14 @@
                     } else {
                         $('#STATUS_TRANSACTION_TRX').val('Refund');
                     }
+                    spinner.classList.add('d-none');
+                    button.disabled = false; 
                 })
-                .catch(error => console.error(error));
+                .catch(error => {
+                    spinner.classList.add('d-none');
+                    button.disabled = false;
+                    console.error(error);
+                });
         }
 
         function refundDetail(id) {
@@ -602,8 +613,14 @@
                     } else {
                         $('#STATUS_TRANSACTION_RF').val('Refund');
                     }
+                    spinner.classList.add('d-none');
+                    button.disabled = false; 
                 })
-                .catch(error => console.error(error));
+                .catch(error => {
+                    spinner.classList.add('d-none');
+                    button.disabled = false;
+                    console.error(error);
+                });
         }
     </script>
 @endsection
