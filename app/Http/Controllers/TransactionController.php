@@ -126,24 +126,38 @@ class TransactionController extends Controller
 
                     break;
 
-                case 'prod':
-                    $userId = Auth::id();
-
-                    $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
-                        ->distinct()
-                        ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
-                        ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-                        ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
-
-
-                    if ($userId != 1) {
-                        $query->where('users.id', $userId);
-                    }
-
-                    $data = $query->get()->map(function ($item) {
-                        return (array) $item;
-                    })->toArray();
-                    break;
+                    case 'prod':
+                        $userId = Auth::id();
+                    
+                        // Retrieve data from the database based on user access to merchants
+                        $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+                                    ->distinct()
+                                    ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+                                    ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+                                    ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+                    
+                        if ($userId != 1) { // Filter data for non-admin users
+                            $query->where('users.id', $userId);
+                        }
+                    
+                        $data = $query->get()->map(function ($item) {
+                            // Convert each item to an array if necessary, depending on how you need to process it
+                            return (array) $item;
+                        })->toArray();
+                    
+                        // Add additional processing if needed (e.g., enriching data with other details from the database)
+                        foreach ($data as $key => $value) {
+                            $merchant = Merchant::where('ID', $value['MERCHANT_ID'])->first();
+                            $data[$key]['MERCHANT'] = $merchant ? $merchant->toArray() : null;
+                            
+                            $nns = Nns::where('NNS', $value['ISSUING_INSTITUTION_NAME'])->first();
+                            if ($nns) {
+                                $data[$key]['NNS'] = $nns['NAME'];
+                            } else {
+                                $data[$key]['NNS'] = null;
+                            }
+                        }
+                        break;
             }
 
             if ($startDate && $endDate) {
