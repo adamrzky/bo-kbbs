@@ -51,7 +51,7 @@
                             <div class="form-group col-6">
                                 <label>UserID (mobile)</label>
                                 <input type="text" class="form-control" name="idMobile" id="idMobile"
-                                    value="{{ old('idMobile') }}" required>
+                                    value="{{ old('idMobile') }}" hidden>
                             </div>
                         </div>
                     </div>

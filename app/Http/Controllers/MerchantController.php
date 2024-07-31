@@ -129,10 +129,10 @@ class MerchantController extends Controller
                 'mid' => 'required',
             ]);
 
-            // $cek = $this->cekNorek($request->norek);
-            // if ($cek['rc'] != '0000') {
-            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            // }
+            $cek = $this->cekNorek($request->norek);
+            if ($cek['rc'] != '0000') {
+                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            }
 
             
             $data_user = [
