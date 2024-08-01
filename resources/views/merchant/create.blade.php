@@ -49,10 +49,11 @@
                             </div>
 
                             <div class="form-group col-6">
-                                <label>UserID (mobile)</label>
+                                <label for="idMobile">UserID (mobile) <span class="text-muted">(Optional)</span></label>
                                 <input type="text" class="form-control" name="idMobile" id="idMobile"
-                                    value="{{ old('idMobile') }}" hidden>
+                                    value="{{ old('idMobile') }}">
                             </div>
+                            
                         </div>
                     </div>
                 </div>

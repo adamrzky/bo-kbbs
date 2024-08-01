@@ -257,40 +257,6 @@
         </div>
     </div>
 
-    <!-- modal succes trx -->
-
-    <!-- HTML -->
-    {{-- <div> --}}
-    <!-- Filters -->
-    {{-- <div class="ui-bordered px-4 pt-4 mb-4">
-      <div class="form-row">
-          <div class="col-md-4 mb-3">
-              <div class="form-group">
-                  <label class="form-label">Amount</label>
-                  <input class="form-control" type="text" name="searchByAmount" id="searchByAmount">
-              </div>
-          </div>
-          <div class="col-md-4 mb-3">
-              <div class="form-group">
-                  <label class="form-label">Amount</label>
-                  <input  type="text" name="toko" id="toko">
-                  <select  class="form-control" id='searchByStatus'>
-                     <option value=''>-- Status Transfer --</option>
-                     <option value='0'>Belum Bayar</option>
-                     <option value='1'>Bayar</option>
-                     <option value='2'>Refund</option>
-                   </select>
-              </div>
-          </div>
-       		
-          <div class="col-md col-xl-2 mb-2">
-              <label class="form-label d-none d-md-block">&nbsp;</label>
-              <button type="button" class="btn btn-secondary btn-block" id="search"><i class="fa fa-search"></i> Cari</button>
-          </div>
-      </div>
-  </div> --}}
-    <!-- / Filters -->
-
 
     <div class="card-body">
         <table id="tbl_list" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -322,7 +288,7 @@
 @endsection
 
 @section('js')
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    {{-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> --}}
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
