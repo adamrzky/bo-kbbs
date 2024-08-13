@@ -43,4 +43,13 @@ class Merchant extends Model
         'QR_TYPE',
         'MERCHANT_TYPE_2'
     ];
+
+
+    public function details() {
+        return $this->hasOne(MerchantDetails::class, 'MERCHANT_ID', 'ID');
+    }
+
+    public function domestic() {
+        return $this->hasOne(MerchantDomestic::class, 'ID', 'QRIS_MERCHANT_DOMESTIC_ID');
+    }
 }

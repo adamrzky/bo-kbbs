@@ -25,4 +25,9 @@ class MerchantDetails extends Model
         'CRITERIA'
     ];
 
+    public function merchant() {
+        return $this->belongsTo(Merchant::class, 'MERCHANT_ID', 'ID');
+    }
+
+
 }

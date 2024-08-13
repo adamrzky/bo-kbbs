@@ -137,10 +137,10 @@ class MerchantController extends Controller
                 'merchantTipe' => 'required',
             ]);
 
-            // $cek = $this->cekNorek($request->norek);
-            // if ($cek['rc'] != '0000') {
-            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            // }
+            $cek = $this->cekNorek($request->norek);
+            if ($cek['rc'] != '0000') {
+                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            }
 
             DB::beginTransaction();
             try {
@@ -413,24 +413,23 @@ class MerchantController extends Controller
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
                         Log::channel('merchant')->info('FILE EXCEL : ' . $path);
-
-                        
                     }
                 }
 
 
                 // Commit the transaction
                 Log::channel('merchant')->info('DONE ==============================================================================');
+                Log::channel('merchant')->info('DONE ==============================================================================');
                 DB::commit();
                 return redirect()->route('merchant.index')->with('msg', 'Merchant created successfully.');
             } catch (\Exception $e) {
-                // Jika terjadi error, rollback transaksi
+                Log::channel('merchant')->info('FAILED CREATE ==============================================================================');
+                Log::channel('merchant')->info('FAILED CREATE ==============================================================================');
                 DB::rollback();
                 return back()->withErrors('Merchant creation failed: ' . $e->getMessage());
             }
         }
     }
-
 
     public function show(Merchant $merchant, $id)
     {
@@ -501,6 +500,8 @@ class MerchantController extends Controller
                 return back()->withErrors(['msg' => 'Merchant update failed. (' . $th->getMessage() . ')']);
             }
         } else {
+            
+            Log::channel('merchant')->info('UPDATE ==============================================================================');
 
             $data_merchant = [
                 'TERMINAL_LABEL' => 'sometimes|string|max:255',
@@ -564,6 +565,9 @@ class MerchantController extends Controller
             //     return back()->withErrors(['msg' => 'Merchant not found']);
             // }
             // $merchant->update($validatedDataMerchant);
+
+            Log::channel('merchant')->info('REQ USER : ' . json_encode($merchant));
+
 
 
 
@@ -631,6 +635,8 @@ class MerchantController extends Controller
             // dd(json_encode($param));
 
             // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
+
+            Log::channel('merchant')->info('DONE UPDATE ==============================================================================');
 
 
             if (!isset($request->merchant->NMID)) {
@@ -794,15 +800,18 @@ class MerchantController extends Controller
                     $path = $storagePath . '/' . $filename;
                     $writer = new Xlsx($spreadsheet);
                     $writer->save($path);
-                    Log::channel('merchant')->info('FILE EXCEL : ' . $path);
-
+                    Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
                 }
+                Log::channel('merchant')->info('DONE UPDATE ==============================================================================');
+
                 return redirect()
                     ->route('merchant.index')
                     ->with('success', 'Merchant updated successfully');
             } else {
 
-                return back()->withErrors(['msg' => 'Merchant update not supported when merchant has NMID.']);
+                Log::channel('merchant')->info('FAILED UPDATE ==============================================================================');
+
+                return back()->withErrors(['msg' => 'Merchant Update Not Support when merchant has NMID..']);
             }
             return redirect()
                 ->route('merchant.index')
