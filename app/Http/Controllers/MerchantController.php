@@ -116,7 +116,7 @@ class MerchantController extends Controller
             }
         } else {
 
-            request()->validate([
+            $validatedData = $request->validate([
                 'norek' => 'required|numeric',
                 'merchant' => 'required',
                 'mcc' => 'required',
@@ -125,31 +125,29 @@ class MerchantController extends Controller
                 'city' => 'required',
                 'address' => 'required',
                 'postalcode' => 'required',
-                'fee' => 'required',
-                'mid' => 'required',
+                'fee' => 'nullable',
+                'mid' => 'nullable',
+                'mpan' => 'required',
+                'ktp' => 'nullable',
+                'npwp' => 'nullable',
+                'idMobile' => 'nullable',
+                'phone' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'qrType' => 'required',
+                'merchantTipe' => 'required',
             ]);
 
-            $cek = $this->cekNorek($request->norek);
-            if ($cek['rc'] != '0000') {
-                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            }
+            // $cek = $this->cekNorek($request->norek);
+            // if ($cek['rc'] != '0000') {
+            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            // }
 
-            
-            $data_user = [
-                'name' => $request->email,
-                'email' => $request->email,
-                'password' => Hash::make('1234qwer'),
-            ];
-            $user = User::create($data_user);
-            $user->assignRole($request->roles);
-
-            Log::channel('merchant')->info('REQ : ' .  json_encode($data_user));
-            Log::channel('merchant')->info('RESP : ' . $user);
-            
-            // dd($user);
-            // dd($request->roles);
-
+            DB::beginTransaction();
             try {
+
+                Log::channel('merchant')->info('CREATE ==============================================================================');
+
+
                 $date = date('Y-m-d H:i:s');
                 $nmid = 'ID' . genID(13);
                 $nns = '93600521';
@@ -157,11 +155,17 @@ class MerchantController extends Controller
                 $data_domestic = [
                     'REVERSE_DOMAIN' => $domain,
                     'NMID' => '',
-                    'MCC' => $request->mcc,
-                    'CRITERIA' => $request->criteria,
+                    'MCC' => $validatedData['mcc'],
+                    'CRITERIA' => $validatedData['criteria'],
                 ];
+                Log::channel('merchant')->info('REQ MerchantDomestic : ' . json_encode($data_domestic));
                 $merchantDomestic = MerchantDomestic::create($data_domestic);
+                Log::channel('merchant')->info('RESP MerchantDomestic : ' . json_encode($merchantDomestic));
+
+
+
                 $id_domestic = $merchantDomestic->ID;
+
 
                 $data_merchant = [
                     'CREATED_AT' => $date,
@@ -170,40 +174,59 @@ class MerchantController extends Controller
                     'MERCHANT_COUNTRY' => 'ID',
                     'QRIS_MERCHANT_DOMESTIC_ID' => $id_domestic,
                     'TYPE_QR' => 'STATIS',
-                    'MERCHANT_NAME' => $request->merchant,
-                    'MERCHANT_CITY' => $request->city,
-                    'POSTAL_CODE' => $request->postalcode,
+                    'MERCHANT_NAME' => $validatedData['merchant'],
+                    'MERCHANT_CITY' => $validatedData['city'],
+                    'POSTAL_CODE' => $validatedData['postalcode'],
                     'MERCHANT_CURRENCY_CODE' => '360',
-                    'MERCHANT_TYPE' => $request->mcc,
+                    'MERCHANT_TYPE' => $validatedData['mcc'],
                     'MERCHANT_EXP' => '900',
                     'MERCHANT_CODE' => genID(5, true),
-                    'MERCHANT_ADDRESS' => $request->address,
+                    'MERCHANT_ADDRESS' => $validatedData['address'],
                     'STATUS' => '0',
                     'NMID' => $request->nmid,
-                    'ACCOUNT_NUMBER' => $request->norek,
-                    'KTP' => $request->ktp,
-                    'NPWP' => $request->npwp,
-                    'USER_ID_MOBILE' => $request->idMobile,
-                    'PHONE_MOBILE' => $request->phone,
-                    'EMAIL_MOBILE' => $request->email,
-                    'QR_TYPE' => $request->qrType,
-                    'MERCHANT_TYPE_2' => $request->merchantTipe,
+                    'ACCOUNT_NUMBER' => $validatedData['norek'],
+                    'KTP' => $validatedData['ktp'],
+                    'NPWP' => $validatedData['npwp'],
+                    'USER_ID_MOBILE' => $validatedData['idMobile'],
+                    'PHONE_MOBILE' => $validatedData['phone'],
+                    'EMAIL_MOBILE' => $validatedData['email'],
+                    'QR_TYPE' => $validatedData['qrType'],
+                    'MERCHANT_TYPE_2' => $validatedData['merchantTipe'],
 
                 ];
 
+                Log::channel('merchant')->info('REQ merchants : ' . json_encode($data_merchant));
                 $merchants = Merchant::create($data_merchant);
+                Log::channel('merchant')->info('RESP merchants : ' . json_encode($merchants));
 
+
+                // User Has Merchant
                 $merchant_id = $merchants->ID;
-
-                $data_user_has_merchant = [
-
-                    'USER_ID' => Auth::id(),
-                    'MERCHANT_ID' =>  $merchant_id,
+                $data_user = [
+                    'name' => $request->email,
+                    'email' => $request->email,
+                    'password' => Hash::make('1234qwer'),
                 ];
+                Log::channel('merchant')->info('REQ USER : ' . json_encode($data_user));
+                $user = User::create($data_user);
+                $user->assignRole($request->roles);
+                // dd($user);
+                Log::channel('merchant')->info('RESP USER : ' . $user);
 
+                $userNew = $user->id;
 
-                $user_has_merchant = UserMerchant::create($data_user_has_merchant);
+                $data_user_has_merchant_new = [
+                    'USER_ID' => $userNew,
+                    'MERCHANT_ID' => $merchant_id,
+                ];
+                $user_has_merchant_new = UserMerchant::create($data_user_has_merchant_new);
 
+                $data_user_has_merchant_auth = [
+                    'USER_ID' => Auth::id(),
+                    'MERCHANT_ID' => $merchant_id,
+                ];
+                $user_has_merchant_auth = UserMerchant::create($data_user_has_merchant_auth);
+                Log::channel('merchant')->info('RESP USER_HAS_MERCHANT : ' . $user_has_merchant_new . '&&' . $user_has_merchant_auth);
                 $data_detail = [
                     'MERCHANT_ID' => $merchant_id,
                     'DOMAIN' => $domain,
@@ -212,7 +235,10 @@ class MerchantController extends Controller
                     'MID' => $request->mid,
                     'CRITERIA' => $request->criteria,
                 ];
+                Log::channel('merchant')->info('REQ MerchantDetails : ' . json_encode($data_detail));
                 $merchant_detail = MerchantDetails::create($data_detail);
+                Log::channel('merchant')->info('RESP MerchantDetails : ' . $merchant_detail);
+
 
 
 
@@ -251,10 +277,21 @@ class MerchantController extends Controller
 
                     // Headers for columns
                     $headers = [
-                        'A3' => 'No.', 'B4' => 'NMID', 'C4' => 'Nama Merchant (max 50)', 'D4' => 'Nama Merchant (max 25)',
-                        'E4' => 'MPAN', 'F4' => 'MID', 'G4' => 'Kota', 'H4' => 'Kodepos', 'I4' => 'Kriteria',
-                        'J4' => 'MCC', 'K4' => 'Jml Terminal', 'L4' => 'Tipe Merchant', 'M4' => 'NPWP',
-                        'N4' => 'KTP', 'O4' => 'Tipe QR'
+                        'A3' => 'No.',
+                        'B4' => 'NMID',
+                        'C4' => 'Nama Merchant (max 50)',
+                        'D4' => 'Nama Merchant (max 25)',
+                        'E4' => 'MPAN',
+                        'F4' => 'MID',
+                        'G4' => 'Kota',
+                        'H4' => 'Kodepos',
+                        'I4' => 'Kriteria',
+                        'J4' => 'MCC',
+                        'K4' => 'Jml Terminal',
+                        'L4' => 'Tipe Merchant',
+                        'M4' => 'NPWP',
+                        'N4' => 'KTP',
+                        'O4' => 'Tipe QR'
                     ];
 
                     foreach ($headers as $cell => $value) {
@@ -375,14 +412,21 @@ class MerchantController extends Controller
                         $path = $storagePath . '/' . $filename;
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($path);
+                        Log::channel('merchant')->info('FILE EXCEL : ' . $path);
+
+                        
                     }
                 }
 
-                return redirect()
-                    ->route('merchant.index')
-                    ->with(['msg' => 'Merchant created successfully.']);
-            } catch (\Throwable $th) {
-                return back()->withErrors(['msg' => 'Merchant created failed. (' . $th->getMessage() . ')']);
+
+                // Commit the transaction
+                Log::channel('merchant')->info('DONE ==============================================================================');
+                DB::commit();
+                return redirect()->route('merchant.index')->with('msg', 'Merchant created successfully.');
+            } catch (\Exception $e) {
+                // Jika terjadi error, rollback transaksi
+                DB::rollback();
+                return back()->withErrors('Merchant creation failed: ' . $e->getMessage());
             }
         }
     }
@@ -589,7 +633,7 @@ class MerchantController extends Controller
             // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
 
 
-            if (isset($request->merchant->NMID)) {
+            if (!isset($request->merchant->NMID)) {
 
                 $spreadsheet = new Spreadsheet();
                 $sheet = $spreadsheet->getActiveSheet();
@@ -615,10 +659,21 @@ class MerchantController extends Controller
 
                 // Headers for columns
                 $headers = [
-                    'A3' => 'No.', 'B4' => 'NMID', 'C4' => 'Nama Merchant (max 50)', 'D4' => 'Nama Merchant (max 25)',
-                    'E4' => 'MPAN', 'F4' => 'MID', 'G4' => 'Kota', 'H4' => 'Kodepos', 'I4' => 'Kriteria',
-                    'J4' => 'MCC', 'K4' => 'Jml Terminal', 'L4' => 'Tipe Merchant', 'M4' => 'NPWP',
-                    'N4' => 'KTP', 'O4' => 'Tipe QR'
+                    'A3' => 'No.',
+                    'B4' => 'NMID',
+                    'C4' => 'Nama Merchant (max 50)',
+                    'D4' => 'Nama Merchant (max 25)',
+                    'E4' => 'MPAN',
+                    'F4' => 'MID',
+                    'G4' => 'Kota',
+                    'H4' => 'Kodepos',
+                    'I4' => 'Kriteria',
+                    'J4' => 'MCC',
+                    'K4' => 'Jml Terminal',
+                    'L4' => 'Tipe Merchant',
+                    'M4' => 'NPWP',
+                    'N4' => 'KTP',
+                    'O4' => 'Tipe QR'
                 ];
 
                 foreach ($headers as $cell => $value) {
@@ -739,10 +794,15 @@ class MerchantController extends Controller
                     $path = $storagePath . '/' . $filename;
                     $writer = new Xlsx($spreadsheet);
                     $writer->save($path);
+                    Log::channel('merchant')->info('FILE EXCEL : ' . $path);
+
                 }
                 return redirect()
-                ->route('merchant.index')
-                ->with('success', 'Merchant updated successfully');
+                    ->route('merchant.index')
+                    ->with('success', 'Merchant updated successfully');
+            } else {
+
+                return back()->withErrors(['msg' => 'Merchant update not supported when merchant has NMID.']);
             }
             return redirect()
                 ->route('merchant.index')
