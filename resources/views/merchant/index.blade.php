@@ -23,8 +23,9 @@
         <div class="pull-right">
             @can('merchant-create')
             <a class="btn btn-success" href="{{ route('merchant.create') }}"> Create New Merchant</a>
+            @endcan
+            @can('merchant-export')
             <a href="{{ route('merchants.export') }}" class="btn btn-success">Export to Excel</a>
-
             @endcan
         </div>
     </div>

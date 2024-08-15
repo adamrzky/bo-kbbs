@@ -29,6 +29,9 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
+use Carbon\Carbon;
+use App\Exports\MerchantsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class MerchantController extends Controller
@@ -116,6 +119,17 @@ class MerchantController extends Controller
             }
         } else {
 
+            $allData = $request->all();
+            $timestamp = Carbon::now()->toDateTimeString();
+            $userId = $request->user() ? $request->user()->id : 'Guest';
+            // $method = $request->method();
+
+            Log::channel('merchant')->info('');
+            Log::channel('merchant')->info('CREATE ==============================================================================');
+            Log::channel('merchant')->info("REQUEST DATA at $timestamp - User: $userId : " . json_encode($allData));
+            Log::channel('merchant')->info('');
+
+
             $validatedData = $request->validate([
                 'norek' => 'required|numeric',
                 'merchant' => 'required',
@@ -137,6 +151,9 @@ class MerchantController extends Controller
                 'merchantTipe' => 'required',
             ]);
 
+            // Log::channel('merchant')->info('REQUEST USER : ' .$validatedData);
+
+
             $cek = $this->cekNorek($request->norek);
             if ($cek['rc'] != '0000') {
                 return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
@@ -145,7 +162,7 @@ class MerchantController extends Controller
             DB::beginTransaction();
             try {
 
-                Log::channel('merchant')->info('CREATE ==============================================================================');
+                Log::channel('merchant')->info('CREATE BEGIN');
 
 
                 $date = date('Y-m-d H:i:s');
@@ -259,14 +276,12 @@ class MerchantController extends Controller
                     // Setup titles
                     $sheet->setCellValue('A1', 'FORM PENDAFTARAN');
                     $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
-                    $sheet->mergeCells('A1:O1'); // Merging title
-                    $sheet->mergeCells('A2:O2'); // Merging subtitle
+                    $sheet->mergeCells('A1:O1');
+                    $sheet->mergeCells('A2:O2');
 
-                    // Applying styles to the merged headers
                     $sheet->getStyle('A1:O2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle('A1:O2')->getFont()->setBold(true);
 
-                    // Header row for "Mandatory"
                     $sheet->setCellValue('B3', 'Mandatory');
                     $sheet->mergeCells('B3:O3');
                     $sheet->getStyle('B3:O3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -310,17 +325,15 @@ class MerchantController extends Controller
                         ]);
                     }
 
-                    // Adding number data spanning rows 3-4
                     $sheet->mergeCells('A3:A4');
                     $sheet->setCellValue('A3', 'NO');
 
-                    // Adding actual data at row 5
                     $data = [
                         'A5' => '1',
                         'B5' => $request->nmid,
                         'C5' => $request->merchant,
                         'D5' => strlen($request->merchant) > 25 ? substr($request->merchant, 0, 25) : $request->merchant,
-                        'E5' => "'" . $request->mpan,  // Menambahkan tanda kutip pada MPAN
+                        'E5' => "'" . $request->mpan,
                         'F5' => $request->mid,
                         'G5' => $request->city,
                         'H5' => $request->postalcode,
@@ -328,14 +341,13 @@ class MerchantController extends Controller
                         'J5' => $request->mcc,
                         'K5' => '1',
                         'L5' => $request->merchantTipe,
-                        'M5' => "'" . $request->npwp,  // Menambahkan tanda kutip pada NPWP
-                        'N5' => "'" . $request->ktp,   // Menambahkan tanda kutip pada KTP
+                        'M5' => "'" . $request->npwp,
+                        'N5' => "'" . $request->ktp,
                         'O5' => $request->qrType
                     ];
 
                     foreach ($data as $cell => $value) {
                         $sheet->setCellValue($cell, $value);
-                        // Apply border to each data cell
                         $sheet->getStyle($cell)->applyFromArray([
                             'borders' => [
                                 'outline' => [
@@ -370,15 +382,13 @@ class MerchantController extends Controller
 
                     function getNextBatchNumber($storagePath, $dateNow)
                     {
-                        $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
+                        $batchNumber = 0;
                         $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
 
-                        // Jika file tanpa batch sudah ada, mulai cek dari batch 2
                         if ($firstFileExists) {
                             $batchNumber = 2;
                         }
 
-                        // Mengecek keberadaan file dengan nama batch selanjutnya
                         while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                             $batchNumber++;
                         }
@@ -388,8 +398,7 @@ class MerchantController extends Controller
 
 
                     if ($appEnv === 'local') {
-                        // Logika download file untuk environment local
-                        $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
+                        $batchNumber = getNextBatchNumber($storagePath, $dateNow);
                         $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
                         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                         header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -397,7 +406,6 @@ class MerchantController extends Controller
                         $writer->save('php://output');
                         exit;
                     } else {
-                        // Mengecek dan membuat direktori jika belum ada
                         if (!file_exists($storagePath)) {
                             if (!mkdir($storagePath, 0775, true)) {
                                 // Jika pembuatan direktori gagal, catat error dan kirim response error
@@ -419,12 +427,12 @@ class MerchantController extends Controller
 
                 // Commit the transaction
                 Log::channel('merchant')->info('DONE ==============================================================================');
-                Log::channel('merchant')->info('DONE ==============================================================================');
+                Log::channel('merchant')->info('');
                 DB::commit();
                 return redirect()->route('merchant.index')->with('msg', 'Merchant created successfully.');
             } catch (\Exception $e) {
                 Log::channel('merchant')->info('FAILED CREATE ==============================================================================');
-                Log::channel('merchant')->info('FAILED CREATE ==============================================================================');
+                Log::channel('merchant')->info('');
                 DB::rollback();
                 return back()->withErrors('Merchant creation failed: ' . $e->getMessage());
             }
@@ -447,6 +455,7 @@ class MerchantController extends Controller
 
     public function edit(Merchant $merchant, $id)
     {
+
         $id = Crypt::decrypt($id);
         $merchant = Merchant::where('id', $id)->first();
         $mcc = Mcc::orderBy('DESC_MCC')
@@ -500,7 +509,7 @@ class MerchantController extends Controller
                 return back()->withErrors(['msg' => 'Merchant update failed. (' . $th->getMessage() . ')']);
             }
         } else {
-            
+
             Log::channel('merchant')->info('UPDATE ==============================================================================');
 
             $data_merchant = [
@@ -566,7 +575,7 @@ class MerchantController extends Controller
             // }
             // $merchant->update($validatedDataMerchant);
 
-            Log::channel('merchant')->info('REQ USER : ' . json_encode($merchant));
+            Log::channel('merchant')->info('REQUEST DATA : ' . json_encode($merchant));
 
 
 
@@ -803,6 +812,7 @@ class MerchantController extends Controller
                     Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
                 }
                 Log::channel('merchant')->info('DONE UPDATE ==============================================================================');
+                Log::channel('merchant')->info('');
 
                 return redirect()
                     ->route('merchant.index')
@@ -947,5 +957,10 @@ class MerchantController extends Controller
 
         // dd($mcc);
         return view('merchant.categoriesEdit', compact('mcc'));
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new MerchantsExport, 'merchants.xlsx');
     }
 }

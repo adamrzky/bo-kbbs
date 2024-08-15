@@ -13,8 +13,7 @@ class MerchantsExport implements FromCollection, WithHeadings, WithMapping
     private $rowNumber = 0;
     public function collection()
     {
-        // Menambahkan 'details' dan 'domestic' pada pemanggilan
-        return Merchant::with(['details', 'domestic'])->get();
+        return Merchant::with(['details.criteria', 'domestic'])->get();
     }
 
     public function headings(): array
@@ -45,27 +44,31 @@ class MerchantsExport implements FromCollection, WithHeadings, WithMapping
     public function map($merchant): array
     {
 
+        // dd($merchant->details->criteria->DESC);
+
         $this->rowNumber++;
+        $desc = isset($merchant->details->criteria) ? $merchant->details->criteria->DESC : ''; 
+
         return [
             $this->rowNumber,
-            $merchant->MERCHANT_NAME, // Nama Merchant (max 50)
-            substr($merchant->MERCHANT_NAME, 0, 25), // Nama Merchant (max 25)
-            $merchant->details ? $merchant->details->MPAN : '', // MPAN
-            $merchant->details ? $merchant->details->MID : '', // MID
-            $merchant->MERCHANT_CITY, // Kota
-            $merchant->POSTAL_CODE, // Kodepos
-            $merchant->details ? $merchant->details->CRITERIA : '', // Kriteria
-            $merchant->domestic ? $merchant->domestic->MCC : '', // MCC
-            '1', // Jml Terminal - Asumsikan ini perlu diisi secara manual atau dengan data lain
-            $merchant->MERCHANT_TYPE_2, // Tipe Merchant
-            $merchant->NPWP, // NPWP**
-            $merchant->KTP, // KTP**
-            $merchant->TYPE_QR, // Tipe QR
-            $merchant->domestic ? $merchant->domestic->NMID : '', // NMID
-            $merchant->CREATED_AT, // Tanggal Create
-            $merchant->ACCOUNT_NUMBER, // No Rekening
-            '', // Kategori - Asumsikan ini perlu diisi secara manual atau dengan data lain
-            $merchant->domestic ? 'Ya' : 'Tidak' // Merchant Domestik
+            $merchant->MERCHANT_NAME, 
+            substr($merchant->MERCHANT_NAME, 0, 25), 
+            $merchant->details ? $merchant->details->MPAN : '', 
+            $merchant->details ? $merchant->details->MID : '', 
+            $merchant->MERCHANT_CITY, 
+            $merchant->POSTAL_CODE, 
+            $merchant->details ? $merchant->details->CRITERIA : '', 
+            $merchant->domestic ? $merchant->domestic->MCC : '', 
+            '1',
+            $merchant->MERCHANT_TYPE_2, 
+            $merchant->NPWP, 
+            $merchant->KTP, 
+            $merchant->TYPE_QR, 
+            $merchant->domestic ? $merchant->domestic->NMID : '', 
+            $merchant->CREATED_AT, 
+            $merchant->ACCOUNT_NUMBER,
+            $desc,
+            $merchant->MERCHANT_ADDRESS,
         ];
     }
     
