@@ -28,6 +28,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Spatie\Permission\Models\Role;
 
 use Carbon\Carbon;
 use App\Exports\MerchantsExport;
@@ -56,6 +57,7 @@ class MerchantController extends Controller
 
         $getUserId = Auth::id();
         $userId = $getUserId;
+        $user = Auth::user(); 
 
         $query = DB::table('QRIS_MERCHANT')
             ->distinct()
@@ -63,9 +65,9 @@ class MerchantController extends Controller
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->select('QRIS_MERCHANT.*');
 
-        if ($userId != 1) {
-            $query->where('users.id', $userId);
-        }
+            if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                $query->where('users.id', $user->id);
+            }
 
         $merchants = $query->paginate(5); // Specify the number of items per page (e.g., 5)
 

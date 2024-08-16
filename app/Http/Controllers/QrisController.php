@@ -35,6 +35,8 @@ class QrisController extends Controller
 
         $getUserId = Auth::id();
         $userId = $getUserId;
+        $user = Auth::user(); 
+
 
         $query = DB::table('QRIS_MERCHANT')
             ->distinct()
@@ -43,9 +45,9 @@ class QrisController extends Controller
             ->select('QRIS_MERCHANT.*');
             // ->groupBy('QRIS_MERCHANT.ID');
 
-        if ($userId != 1) {
-            $query->where('users.id', $userId);
-        }
+        if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                $query->where('users.id', $user->id);
+            }
 
         $merchant = $query->get()->toArray();
 

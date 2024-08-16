@@ -61,6 +61,8 @@ class RefundController extends Controller
                 break;
             case 'prod':
                 $userId = Auth::id();
+                $user = Auth::user(); 
+
 
                 $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
                     ->distinct()
@@ -68,9 +70,9 @@ class RefundController extends Controller
                     ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
                     ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
 
-                if ($userId != 1) {
-                    $query->where('users.id', $userId);
-                }
+                    if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                        $query->where('users.id', $user->id);
+                    }
                 $datas = $query->get()->toArray();
                 break;
         }
