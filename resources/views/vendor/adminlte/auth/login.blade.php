@@ -81,10 +81,18 @@
         </div>
 
     </form>
+
+@if(session('error'))
+<br>
+<div class="alert alert-danger">
+    {{ session('error') }}
+</div>
+@endif
+
 @stop
-{{-- 
+
 @section('auth_footer')
-    Password reset link
+    {{-- Password reset link --}}
     @if($password_reset_url)
         <p class="my-0">
             <a href="{{ $password_reset_url }}">
@@ -93,12 +101,12 @@
         </p>
     @endif
 
-    Register link
-    @if($register_url)
+    {{-- Register link --}}
+    {{-- @if($register_url)
         <p class="my-0">
             <a href="{{ $register_url }}">
                 {{ __('adminlte::adminlte.register_a_new_membership') }}
             </a>
         </p>
-    @endif
-@stop --}}
+    @endif --}}
+@stop

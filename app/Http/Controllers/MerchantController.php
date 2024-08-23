@@ -28,7 +28,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use Spatie\Permission\Models\Role;
 
 use Carbon\Carbon;
 use App\Exports\MerchantsExport;
@@ -57,7 +56,7 @@ class MerchantController extends Controller
 
         $getUserId = Auth::id();
         $userId = $getUserId;
-        $user = Auth::user(); 
+        // $user = Auth::user();
 
         $query = DB::table('QRIS_MERCHANT')
             ->distinct()
@@ -65,11 +64,12 @@ class MerchantController extends Controller
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->select('QRIS_MERCHANT.*');
 
-            if (!$user->hasRole(['Admin', 'Superadmin'])) {
-                $query->where('users.id', $user->id);
-            }
+        if ($userId != 1 && $userId != 67) {
+            $query->where('users.id', $userId);
+        }
 
-        $merchants = $query->paginate(5); // Specify the number of items per page (e.g., 5)
+
+        $merchants = $query->paginate(10); // Specify the number of items per page (e.g., 5)
 
         return view('merchant.index', ['merchants' => $merchants]);
     }
@@ -156,10 +156,10 @@ class MerchantController extends Controller
             // Log::channel('merchant')->info('REQUEST USER : ' .$validatedData);
 
 
-            $cek = $this->cekNorek($request->norek);
-            if ($cek['rc'] != '0000') {
-                return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-            }
+            // $cek = $this->cekNorek($request->norek);
+            // if ($cek['rc'] != '0000') {
+            //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+            // }
 
             DB::beginTransaction();
             try {
@@ -464,7 +464,7 @@ class MerchantController extends Controller
             ->get()
             ->toArray();
         $criteria = getCriteria();
-        $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
+        $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first(); 
         $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
         return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
     }
@@ -484,22 +484,17 @@ class MerchantController extends Controller
 
         if ($request->has('merchantType')) {
             try {
-                // Validasi data yang diperlukan
                 $data_merchant = $request->validate([
                     'ID' => 'required|integer',
                     'CODE_MCC' => 'required|string|max:4',
                     'DESC_MCC' => 'required|string|max:255',
                 ]);
 
-                // Ambil objek MCC yang akan di-update
                 $mcc = Mcc::find($data_merchant['ID']);
 
-                // Periksa apakah objek MCC ditemukan
                 if ($mcc) {
-                    // Update data MCC dengan data yang sudah divalidasi
                     $mcc->update($data_merchant);
 
-                    // Redirect ke route 'merchant.categories' dengan pesan sukses
                     return redirect()
                         ->route('merchant.categories')
                         ->with('msg', 'Merchant updated successfully.');
@@ -507,327 +502,292 @@ class MerchantController extends Controller
                     return back()->withErrors(['msg' => 'Merchant not found.']);
                 }
             } catch (\Throwable $th) {
-                // Kembali ke halaman sebelumnya dengan pesan error
                 return back()->withErrors(['msg' => 'Merchant update failed. (' . $th->getMessage() . ')']);
             }
         } else {
 
-            Log::channel('merchant')->info('UPDATE ==============================================================================');
-
-            $data_merchant = [
-                'TERMINAL_LABEL' => 'sometimes|string|max:255',
-                'MERCHANT_COUNTRY' => 'sometimes|string|max:255',
-                'QRIS_MERCHANT_DOMESTIC_ID' => 'sometimes|numeric',
-                'TYPE_QR' => 'sometimes|string|max:255',
-                'MERCHANT_NAME' => 'sometimes|string|max:255',
-                'MERCHANT_CITY' => 'sometimes|string|max:255',
-                'POSTAL_CODE' => 'sometimes|string|max:10',
-                'MERCHANT_CURRENCY_CODE' => 'sometimes|string|max:3',
-                'MERCHANT_TYPE' => 'sometimes|string|max:255',
-                'MERCHANT_EXP' => 'sometimes|date',
-                'MERCHANT_ADDRESS' => 'sometimes|string|max:1024',
-                'STATUS' => 'sometimes|integer',
-                // 'NMID' => 'sometimes|string|max:255',
-                'ACCOUNT_NUMBER' => 'sometimes|string|max:255',
-                'KTP' => 'nullable|integer',
-                'NPWP' => 'nullable|integer',
-                'USER_ID_MOBILE' => 'sometimes|numeric',
-                'PHONE_MOBILE' => 'sometimes|string|max:15',
-                'EMAIL_MOBILE' => 'sometimes|email|max:255',
-                'QR_TYPE' => 'sometimes|string|max:10',
-                'MERCHANT_TYPE_2' => 'sometimes'
-            ];
-
-            // Temukan Merchant berdasarkan ID yang diberikan dalam request
-            $merchant = Merchant::find($request->ID_MERCHANT);
-            if (!$merchant) {
-                return back()->withErrors(['msg' => 'Merchant not found']);
-            }
-
-            // Update data merchant dengan data yang sudah divalidasi
-            $merchant->update([
-                // 'TERMINAL_LABEL' => $request->TERMINAL_LABEL,
-                // 'MERCHANT_COUNTRY' => $request->MERCHANT_COUNTRY,
-                // 'QRIS_MERCHANT_DOMESTIC_ID' => $request->QRIS_MERCHANT_DOMESTIC_ID,
-                // 'TYPE_QR' => $request->TYPE_QR,
-                'MERCHANT_NAME' => $request->MERCHANT_NAME,
-                'MERCHANT_CITY' => $request->MERCHANT_CITY,
-                'POSTAL_CODE' => $request->POSTAL_CODE,
-                // 'MERCHANT_CURRENCY_CODE' => $request->MERCHANT_CURRENCY_CODE,
-                // 'MERCHANT_TYPE' => $request->MERCHANT_TYPE,
-                // 'MERCHANT_EXP' => $request->MERCHANT_EXP,
-                'MERCHANT_ADDRESS' => $request->MERCHANT_ADDRESS,
-                // 'STATUS' => $request->STATUS,
-                'ACCOUNT_NUMBER' => $request->ACCOUNT_NUMBER,
-                'KTP' => $request->KTP,
-                'NPWP' => $request->NPWP,
-                'USER_ID_MOBILE' => $request->USER_ID_MOBILE,
-                'PHONE_MOBILE' => $request->PHONE_MOBILE,
-                'EMAIL_MOBILE' => $request->EMAIL_MOBILE,
-                'QR_TYPE' => $request->QR_TYPE,
-                'MERCHANT_TYPE_2' => $request->MERCHANT_TYPE_2
-            ]);
-
-            // dd($request);
-
-            // $validatedDataMerchant = $request->validate($data_merchant);
-            // $merchant = Merchant::find($request->ID_MERCHANT);
-            // if (!$merchant) {
-            //     return back()->withErrors(['msg' => 'Merchant not found']);
-            // }
-            // $merchant->update($validatedDataMerchant);
-
-            Log::channel('merchant')->info('REQUEST DATA : ' . json_encode($merchant));
-
-
-
-
-            $merchantDetailsId = $request->ID_MERCHANT_DETAILS;
-            $MerchantDetails = MerchantDetails::find($merchantDetailsId);
-            if (!$MerchantDetails) {
-                return back()->withErrors(['msg' => 'Merchant Details not found']);
-            }
-            $request->validate([
-                'CRITERIA' => 'required',
-            ]);
-            $MerchantDetails->update([
-                'CRITERIA' => $request->CRITERIA
-            ]);
-
-
-            $merchantDomesticId = $request->ID_MERCHANT_DOMESTIC;
-            $MerchantDomestic = MerchantDomestic::find($merchantDomesticId);
-            if (!$MerchantDomestic) {
-                return back()->withErrors(['msg' => 'Merchant Domestic not found']);
-            }
-            $request->validate([
-                'MCC' => 'required',
-                'CRITERIA' => 'required',
-            ]);
-            $MerchantDomestic->update([
-                'MCC' => $request->MCC,
-                'CRITERIA' => $request->CRITERIA
-            ]);
-
-
-
-            $date = date('Y-m-d H:i:s');
-            $nmid = 'ID' . genID(13);
-            $nns = '93600521';
-            $domain = 'ID.CO.QRIS.WWW';
-            $val_merchant = [
-                'ID' => $request->merchant->ID,
-                'UPDATED_AT' => $date,
-                'TERMINAL_LABEL' => $request->merchant->TERMINAL_LABEL,
-                'MERCHANT_COUNTRY' => 'ID',
-                // 'QRIS_MERCHANT_DOMESTIC' => '',
-                'TYPE_QR' => $request->merchant->TYPE_QR,
-                'MERCHANT_NAME' => $request->merchant->MERCHANT_NAME,
-                'MERCHANT_CITY' => $request->merchant->MERCHANT_CITY,
-                'POSTAL_CODE' => $request->merchant->POSTAL_CODE,
-                'MERCHANT_CURRENCY_CODE' => $request->merchant->MERCHANT_CURRENCY_CODE,
-                'MERCHANT_TYPE' => $request->merchant->MERCHANT_TYPE,
-                'MERCHANT_EXP' => $request->merchant->MERCHANT_EXP,
-                'MERCHANT_CODE' => $request->merchant->MERCHANT_CODE,
-                'MERCHANT_ADDRESS' => $request->merchant->MERCHANT_ADDRESS,
-                'STATUS' => $request->merchant->STATUS,
-                'NMID' => $request->merchant->NMID,
-                'ACCOUNT_NUMBER' => $request->merchant->ACCOUNT_NUMBER,
-            ];
-
-            $param = [
-
-                'MERCHANT' => $val_merchant
-
-            ];
-
-
-            // json_encode($param);
-            // dd(json_encode($param));
-
-            // $res = Http::timeout(10)->withBasicAuth('username', 'password')->post('http://192.168.26.26:10002/merchant.php?cmd=edit', $param);
-
-            Log::channel('merchant')->info('DONE UPDATE ==============================================================================');
-
-
             if (!isset($request->merchant->NMID)) {
 
-                $spreadsheet = new Spreadsheet();
-                $sheet = $spreadsheet->getActiveSheet();
+                Log::channel('merchant')->info('UPDATE ==============================================================================');
 
-                // Setup titles
-                $sheet->setCellValue('A1', 'FORM PENDAFTARAN');
-                $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
-                $sheet->mergeCells('A1:O1'); // Merging title
-                $sheet->mergeCells('A2:O2'); // Merging subtitle
-
-                // Applying styles to the merged headers
-                $sheet->getStyle('A1:O2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('A1:O2')->getFont()->setBold(true);
-
-                // Header row for "Mandatory"
-                $sheet->setCellValue('B3', 'Mandatory');
-                $sheet->mergeCells('B3:O3');
-                $sheet->getStyle('B3:O3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('B3:O3')->getFont()->setBold(true);
-                $sheet->getStyle('B3')->getFill()
-                    ->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
-
-                // Headers for columns
-                $headers = [
-                    'A3' => 'No.',
-                    'B4' => 'NMID',
-                    'C4' => 'Nama Merchant (max 50)',
-                    'D4' => 'Nama Merchant (max 25)',
-                    'E4' => 'MPAN',
-                    'F4' => 'MID',
-                    'G4' => 'Kota',
-                    'H4' => 'Kodepos',
-                    'I4' => 'Kriteria',
-                    'J4' => 'MCC',
-                    'K4' => 'Jml Terminal',
-                    'L4' => 'Tipe Merchant',
-                    'M4' => 'NPWP',
-                    'N4' => 'KTP',
-                    'O4' => 'Tipe QR'
+                $data_merchant = [
+                    'TERMINAL_LABEL' => 'sometimes|string|max:255',
+                    'MERCHANT_COUNTRY' => 'sometimes|string|max:255',
+                    'QRIS_MERCHANT_DOMESTIC_ID' => 'sometimes|numeric',
+                    'TYPE_QR' => 'sometimes|string|max:255',
+                    'MERCHANT_NAME' => 'sometimes|string|max:255',
+                    'MERCHANT_CITY' => 'sometimes|string|max:255',
+                    'POSTAL_CODE' => 'sometimes|string|max:10',
+                    'MERCHANT_CURRENCY_CODE' => 'sometimes|string|max:3',
+                    'MERCHANT_TYPE' => 'sometimes|string|max:255',
+                    'MERCHANT_EXP' => 'sometimes|date',
+                    'MERCHANT_ADDRESS' => 'sometimes|string|max:1024',
+                    'STATUS' => 'sometimes|integer',
+                    // 'NMID' => 'sometimes|string|max:255',
+                    'ACCOUNT_NUMBER' => 'sometimes|string|max:255',
+                    'KTP' => 'nullable|integer',
+                    'NPWP' => 'nullable|integer',
+                    'USER_ID_MOBILE' => 'sometimes|numeric',
+                    'PHONE_MOBILE' => 'sometimes|string|max:15',
+                    'EMAIL_MOBILE' => 'sometimes|email|max:255',
+                    'QR_TYPE' => 'sometimes|string|max:10',
+                    'MERCHANT_TYPE_2' => 'sometimes'
                 ];
 
-                foreach ($headers as $cell => $value) {
-                    $sheet->getStyle($cell, $value)->getFill()
-                        ->setFillType(Fill::FILL_SOLID)
-                        ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
-                    $sheet->setCellValue($cell, $value);
-                    // Apply border and styling for all headers
-                    $sheet->getStyle($cell)->applyFromArray([
-                        'borders' => [
-                            'outline' => [
-                                'borderStyle' => Border::BORDER_MEDIUM,
-                                'color' => ['argb' => '000000'],
-                            ],
-                        ],
-                    ]);
+                $merchant = Merchant::find($request->ID_MERCHANT);
+                if (!$merchant) {
+                    return back()->withErrors(['msg' => 'Merchant not found']);
                 }
 
-                // Adding number data spanning rows 3-4
-                $sheet->mergeCells('A3:A4');
-                $sheet->setCellValue('A3', 'NO');
+                $merchant->update([
+                    // 'TERMINAL_LABEL' => $request->TERMINAL_LABEL,
+                    // 'MERCHANT_COUNTRY' => $request->MERCHANT_COUNTRY,
+                    // 'QRIS_MERCHANT_DOMESTIC_ID' => $request->QRIS_MERCHANT_DOMESTIC_ID,
+                    // 'TYPE_QR' => $request->TYPE_QR,
+                    'MERCHANT_NAME' => $request->MERCHANT_NAME,
+                    'MERCHANT_CITY' => $request->MERCHANT_CITY,
+                    'POSTAL_CODE' => $request->POSTAL_CODE,
+                    // 'MERCHANT_CURRENCY_CODE' => $request->MERCHANT_CURRENCY_CODE,
+                    // 'MERCHANT_TYPE' => $request->MERCHANT_TYPE,
+                    // 'MERCHANT_EXP' => $request->MERCHANT_EXP,
+                    'MERCHANT_ADDRESS' => $request->MERCHANT_ADDRESS,
+                    // 'STATUS' => $request->STATUS,
+                    'ACCOUNT_NUMBER' => $request->ACCOUNT_NUMBER,
+                    'KTP' => $request->KTP,
+                    'NPWP' => $request->NPWP,
+                    'USER_ID_MOBILE' => $request->USER_ID_MOBILE,
+                    'PHONE_MOBILE' => $request->PHONE_MOBILE,
+                    'EMAIL_MOBILE' => $request->EMAIL_MOBILE,
+                    'QR_TYPE' => $request->QR_TYPE,
+                    'MERCHANT_TYPE_2' => $request->MERCHANT_TYPE_2
+                ]);
 
-                // Adding actual data at row 5
-                $data = [
-                    'A5' => '1',
-                    'B5' => $request->NMID,
-                    'C5' => $request->MERCHANT_NAME,
-                    'D5' => strlen($request->MERCHANT_NAME) > 25 ? substr($request->MERCHANT_NAME, 0, 25) : $request->MERCHANT_NAME,
-                    'E5' => "'" . $request->MPAN,  // Menambahkan tanda kutip pada MPAN
-                    'F5' => $request->MID,
-                    'G5' => $request->MERCHANT_CITY,
-                    'H5' => $request->POSTAL_CODE,
-                    'I5' => $request->CRITERIA,
-                    'J5' => $request->MCC,
-                    'K5' => '1',
-                    'L5' => $request->MERCHANT_TYPE_2,
-                    'M5' => "'" . $request->NPWP,  // Menambahkan tanda kutip pada NPWP
-                    'N5' => "'" . $request->KTP,   // Menambahkan tanda kutip pada KTP
-                    'O5' => $request->QR_TYPE
-                ];
+                // dd($request);
 
-                foreach ($data as $cell => $value) {
-                    $sheet->setCellValue($cell, $value);
-                    // Apply border to each data cell
-                    $sheet->getStyle($cell)->applyFromArray([
-                        'borders' => [
-                            'outline' => [
-                                'borderStyle' => Border::BORDER_THIN,
-                                'color' => ['argb' => '000000'],
-                            ],
-                        ],
-                    ]);
+                Log::channel('merchant')->info('REQUEST DATA : ' . json_encode($merchant));
+
+
+
+
+                $merchantDetailsId = $request->ID_MERCHANT_DETAILS;
+                $MerchantDetails = MerchantDetails::find($merchantDetailsId);
+                if (!$MerchantDetails) {
+                    return back()->withErrors(['msg' => 'Merchant Details not found']);
                 }
+                $request->validate([
+                    'CRITERIA' => 'required',
+                ]);
+                $MerchantDetails->update([
+                    'CRITERIA' => $request->CRITERIA
+                ]);
 
-                $appEnv = getenv('APP_ENV');
-                $dateNow = date('Ymd');
-                $baseDir = '/home/share/test/KBBS_OUT/';
-                $baseDir2 = '/home/adam/test/KBBS_OUT/';
-                $folderName = $dateNow;
-                $storagePathProd = $baseDir . $folderName;
-                $storagePathDev = $baseDir2 . $folderName;
 
-                switch ($appEnv) {
-                    case 'prod':
-                        $storagePath = $storagePathProd;
-                        break;
-                    case 'dev':
-                        $storagePath = $storagePathDev;
-                        break;
-                    case 'local':
-                        $storagePath = null;
-                        break;
-                    default:
-                        die('Invalid environment.');
+                $merchantDomesticId = $request->ID_MERCHANT_DOMESTIC;
+                $MerchantDomestic = MerchantDomestic::find($merchantDomesticId);
+                if (!$MerchantDomestic) {
+                    return back()->withErrors(['msg' => 'Merchant Domestic not found']);
                 }
-
-                function getNextBatchNumber($storagePath, $dateNow)
-                {
-                    $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
-                    $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
-
-                    // Jika file tanpa batch sudah ada, mulai cek dari batch 2
-                    if ($firstFileExists) {
-                        $batchNumber = 2;
-                    }
-
-                    // Mengecek keberadaan file dengan nama batch selanjutnya
-                    while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
-                        $batchNumber++;
-                    }
-
-                    return $batchNumber;
-                }
+                $request->validate([
+                    'MCC' => 'required',
+                    'CRITERIA' => 'required',
+                ]);
+                $MerchantDomestic->update([
+                    'MCC' => $request->MCC,
+                    'CRITERIA' => $request->CRITERIA
+                ]);
 
 
-                if ($appEnv === 'local') {
-                    // Logika download file untuk environment local
-                    $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
-                    $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    header('Content-Disposition: attachment; filename="' . $filename . '"');
-                    $writer = new Xlsx($spreadsheet);
-                    $writer->save('php://output');
-                    exit;
-                } else {
-                    // Mengecek dan membuat direktori jika belum ada
-                    if (!file_exists($storagePath)) {
-                        if (!mkdir($storagePath, 0775, true)) {
-                            // Jika pembuatan direktori gagal, catat error dan kirim response error
-                            error_log("Failed to create directory at $storagePath");
-                            return response()->json(['error' => 'Failed to create directory'], 500);
-                        }
-                    }
 
-                    // Simpan file ke disk untuk environment prod dan dev
-                    $batchNumber = getNextBatchNumber($storagePath, $dateNow);
-                    $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                    $path = $storagePath . '/' . $filename;
-                    $writer = new Xlsx($spreadsheet);
-                    $writer->save($path);
-                    Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
-                }
+                $date = date('Y-m-d H:i:s');
+                $nmid = 'ID' . genID(13);
+                $nns = '93600521';
+                $domain = 'ID.CO.QRIS.WWW';
+
                 Log::channel('merchant')->info('DONE UPDATE ==============================================================================');
-                Log::channel('merchant')->info('');
 
+
+
+                $spreadsheet = $this->generateMerchantExcel($request);
+                $this->saveExcelFile($spreadsheet, $request);
                 return redirect()
                     ->route('merchant.index')
                     ->with('success', 'Merchant updated successfully');
             } else {
-
-                Log::channel('merchant')->info('FAILED UPDATE ==============================================================================');
-
                 return back()->withErrors(['msg' => 'Merchant Update Not Support when merchant has NMID..']);
             }
             return redirect()
                 ->route('merchant.index')
                 ->with('success', 'Merchant updated successfully');
+        }
+    }
+
+    public function generateMerchantExcel($request)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Setup titles
+        $sheet->setCellValue('A1', 'FORM PENDAFTARAN');
+        $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
+        $sheet->mergeCells('A1:O1'); // Merging title
+        $sheet->mergeCells('A2:O2'); // Merging subtitle
+
+        // Applying styles to the merged headers
+        $sheet->getStyle('A1:O2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:O2')->getFont()->setBold(true);
+
+        // Header row for "Mandatory"
+        $sheet->setCellValue('B3', 'Mandatory');
+        $sheet->mergeCells('B3:O3');
+        $sheet->getStyle('B3:O3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B3:O3')->getFont()->setBold(true);
+        $sheet->getStyle('B3')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+
+        // Headers for columns
+        $headers = [
+            'A3' => 'No.',
+            'B4' => 'NMID',
+            'C4' => 'Nama Merchant (max 50)',
+            'D4' => 'Nama Merchant (max 25)',
+            'E4' => 'MPAN',
+            'F4' => 'MID',
+            'G4' => 'Kota',
+            'H4' => 'Kodepos',
+            'I4' => 'Kriteria',
+            'J4' => 'MCC',
+            'K4' => 'Jml Terminal',
+            'L4' => 'Tipe Merchant',
+            'M4' => 'NPWP',
+            'N4' => 'KTP',
+            'O4' => 'Tipe QR'
+        ];
+
+        foreach ($headers as $cell => $value) {
+            $sheet->getStyle($cell, $value)->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+            $sheet->setCellValue($cell, $value);
+            // Apply border and styling for all headers
+            $sheet->getStyle($cell)->applyFromArray([
+                'borders' => [
+                    'outline' => [
+                        'borderStyle' => Border::BORDER_MEDIUM,
+                        'color' => ['argb' => '000000'],
+                    ],
+                ],
+            ]);
+        }
+
+        // Adding number data spanning rows 3-4
+        $sheet->mergeCells('A3:A4');
+        $sheet->setCellValue('A3', 'NO');
+
+        // Adding actual data at row 5
+        $data = [
+            'A5' => '1',
+            'B5' => $request->NMID,
+            'C5' => $request->MERCHANT_NAME,
+            'D5' => strlen($request->MERCHANT_NAME) > 25 ? substr($request->MERCHANT_NAME, 0, 25) : $request->MERCHANT_NAME,
+            'E5' => "'" . $request->MPAN,  // Menambahkan tanda kutip pada MPAN
+            'F5' => $request->MID,
+            'G5' => $request->MERCHANT_CITY,
+            'H5' => $request->POSTAL_CODE,
+            'I5' => $request->CRITERIA,
+            'J5' => $request->MCC,
+            'K5' => '1',
+            'L5' => $request->MERCHANT_TYPE_2,
+            'M5' => "'" . $request->NPWP,  // Menambahkan tanda kutip pada NPWP
+            'N5' => "'" . $request->KTP,   // Menambahkan tanda kutip pada KTP
+            'O5' => $request->QR_TYPE
+        ];
+
+        foreach ($data as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            // Apply border to each data cell
+            $sheet->getStyle($cell)->applyFromArray([
+                'borders' => [
+                    'outline' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['argb' => '000000'],
+                    ],
+                ],
+            ]);
+        }
+
+        return $spreadsheet;
+    }
+
+    public function saveExcelFile($spreadsheet, $request)
+    {
+        $appEnv = getenv('APP_ENV');
+        $dateNow = date('Ymd');
+        $baseDir = '/home/share/test/KBBS_OUT/';
+        $baseDir2 = '/home/adam/test/KBBS_OUT/';
+        $folderName = $dateNow;
+        $storagePathProd = $baseDir . $folderName;
+        $storagePathDev = $baseDir2 . $folderName;
+
+        switch ($appEnv) {
+            case 'prod':
+                $storagePath = $storagePathProd;
+                break;
+            case 'dev':
+                $storagePath = $storagePathDev;
+                break;
+            case 'local':
+                $storagePath = null;
+                break;
+            default:
+                die('Invalid environment.');
+        }
+
+        function getNextBatchNumber($storagePath, $dateNow)
+        {
+            $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
+            $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
+
+            // Jika file tanpa batch sudah ada, mulai cek dari batch 2
+            if ($firstFileExists) {
+                $batchNumber = 2;
+            }
+
+            // Mengecek keberadaan file dengan nama batch selanjutnya
+            while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+                $batchNumber++;
+            }
+
+            return $batchNumber;
+        }
+
+
+        if ($appEnv === 'local') {
+            // Logika download file untuk environment local
+            $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
+            $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+            exit;
+        } else {
+            // Mengecek dan membuat direktori jika belum ada
+            if (!file_exists($storagePath)) {
+                if (!mkdir($storagePath, 0775, true)) {
+                    // Jika pembuatan direktori gagal, catat error dan kirim response error
+                    error_log("Failed to create directory at $storagePath");
+                    return response()->json(['error' => 'Failed to create directory'], 500);
+                }
+            }
+
+            // Simpan file ke disk untuk environment prod dan dev
+            $batchNumber = getNextBatchNumber($storagePath, $dateNow);
+            $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            $path = $storagePath . '/' . $filename;
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($path);
+            Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
         }
     }
 
