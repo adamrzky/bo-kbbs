@@ -10,6 +10,7 @@ use App\Models\UserMerchant;
 use App\Models\QrisMerchantActivity;
 use App\Models\Cabang;
 use App\Models\Criteria;
+use App\Models\Wilayah;
 use App\User;
 use Hash;
 use Illuminate\Http\Request;
@@ -82,18 +83,16 @@ class MerchantController extends Controller
      */
     public function create()
     {
-        $mcc = Mcc::orderBy('DESC_MCC')
-            ->get()
-            ->toArray();
-        // $criteria = getCriteria();
-        $criteria = Criteria::orderBy('NO')
-            ->get()
-            ->toArray();
-        $prov = getWilayah();
+        $mcc = Mcc::orderBy('DESC_MCC')->get()->toArray();
+        $criteria = Criteria::orderBy('NO')->get()->toArray();
+        $provinsi = Wilayah::select('PROVINSI')->distinct()->get(); // Ambil daftar provinsi yang unik
         $cabangs = Cabang::all();
-
-        return view('merchant.create', compact('mcc', 'criteria', 'prov', 'cabangs'));
+        
+        $kota = Wilayah::where('PROVINSI', $provinsi)->get(['ID', 'DAERAH_TINGKAT']);
+    
+        return view('merchant.create', compact('mcc', 'criteria', 'provinsi', 'cabangs', 'kota'));
     }
+    
 
     /**
      * Store a newly created resource in storage.

@@ -33,8 +33,8 @@
                     <div class="card-body">
                         <div class="row">
 
-                            <input type="text" class="form-control" name="roles" id="roles"
-                            value="Merchant" hidden readonly>
+                            <input type="text" class="form-control" name="roles" id="roles" value="Merchant" hidden
+                                readonly>
 
                             <div class="form-group col-6">
                                 <label>Email</label>
@@ -53,7 +53,7 @@
                                 <input type="text" class="form-control" name="idMobile" id="idMobile"
                                     value="{{ old('idMobile') }}">
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -184,16 +184,20 @@
                                     <label>Provinsi</label>
                                     <select class="form-control" name="prov" id="prov" required>
                                         <option value="">-</option>
-                                        @foreach ($prov as $dropdown)
-                                            <option value="{{ $dropdown['CD_PROP'] }}">{{ $dropdown['PROPINSI'] }}
-                                            </option>
+                                        @foreach ($provinsi as $item)
+                                            <option value="{{ $item->PROVINSI }}">{{ $item->PROVINSI }}</option>
                                         @endforeach
                                     </select>
                                 </div>
+
                                 <div class="form-group col-6">
                                     <label>Kota</label>
                                     <select class="form-control" name="city" id="city" required>
                                         <option value="">-</option>
+                                        @foreach ($kota as $item)
+                                            <option value="{{ $item->DAERAH_TINGKAT }}">{{ $item->DAERAH_TINGKAT }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group col-6">
@@ -225,32 +229,29 @@
 
 @section('js')
     <script>
-        $("#prov").change(function() {
-            var provinsi = $("#prov").val();
-            var negara = 'ID'; // Asumsikan negara selalu ID seperti dalam contoh
+        document.addEventListener('DOMContentLoaded', function() {
+            const provSelect = document.getElementById('prov');
+            const citySelect = document.getElementById('city');
 
-            $.ajax({
-                url: `http://103.182.72.16:10002/api.php?negara=${negara}&prov=${provinsi}`,
-                type: 'GET',
-                success: function(msg) {
-                    var res = JSON.parse(msg); // Jika respon adalah JSON string
-                    var select = $('#city');
-                    select.empty(); // Menghapus semua option yang ada
-                    select.append(new Option('-', '')); // Menambahkan option default
+            provSelect.addEventListener('change', function() {
+                const provinsi = this.value;
 
-                    $.each(res, function(index, item) {
-                        var option = new Option(item.KOTA);
-                        select.append($(option));
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.log("Error: " + error);
+                if (provinsi) {
+                    fetch(`{{ url('/get-kota') }}/${provinsi}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            citySelect.innerHTML = '<option value="">-</option>'; // Reset kota
+                            data.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item.DAERAH_TINGKAT;
+                                option.text = item.DAERAH_TINGKAT;
+                                citySelect.appendChild(option);
+                            });
+                        });
+                } else {
+                    citySelect.innerHTML = '<option value="">-</option>';
                 }
             });
-        });
-
-        $(document).ready(function() {
-            prov();
         });
 
         function toggleFields() {

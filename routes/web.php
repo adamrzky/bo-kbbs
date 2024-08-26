@@ -17,6 +17,11 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+Route::get('/get-kota/{provinsi}', function($provinsi) {
+    $kota = \App\Models\Wilayah::where('PROVINSI', $provinsi)->get();
+    return response()->json($kota);
+});
+
 Route::get('/transaction/detail/{id}', 'TransactionController@detail')->name('transactions.detail');
    
 Auth::routes();
