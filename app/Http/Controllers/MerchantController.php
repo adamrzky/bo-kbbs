@@ -7,6 +7,7 @@ use App\Models\Mcc;
 use App\Models\MerchantDetails;
 use App\Models\MerchantDomestic;
 use App\Models\UserMerchant;
+use App\Models\QrisMerchantActivity;
 use App\Models\Cabang;
 use App\Models\Criteria;
 use App\User;
@@ -244,6 +245,27 @@ class MerchantController extends Controller
             Log::channel('merchant')->info('RESP MerchantDetails : ' . $merchant_detail);
 
 
+            // Log activity for REQUEST
+            $raw_request = json_encode($request->toArray());
+            $activity_type = 'REQUEST';
+            $comment = 'ADD REQUEST';
+            $action = 'ADD';
+            $this->logMerchantActivityNew($raw_request, null, $comment, $action, $activity_type);
+
+            // Log activity for response
+            $raw_response = json_encode([
+                'merchant' => $merchants,
+                'merchant_details' => $merchant_detail,
+                'merchant_domestic' => $merchantDomestic,
+                'user_has_merchant' => $data_user_has_merchant_auth
+            ]);
+            $activity_type = 'RESPONSE';
+            $comment = 'ADD RESPONSE';
+            $action = 'ADD';
+            $this->logMerchantActivityNew(null, $raw_response, $comment, $action, $activity_type);
+
+
+          
 
 
             // $param = [
@@ -256,8 +278,8 @@ class MerchantController extends Controller
             // Generate Excel if Merchant exists
             if (isset($merchants)) {
                 $request['addMerchant'] = true;
-                $spreadsheet = $this->generateMerchantExcel($request);
-                $this->saveExcelFile($spreadsheet, $request);
+                // $spreadsheet = $this->generateMerchantExcel($request);
+                // $this->saveExcelFile($spreadsheet, $request);
             }
 
 
@@ -312,13 +334,30 @@ class MerchantController extends Controller
     public function update(Request $request, Merchant $merchant, Mcc $mcc, MerchantDetails $MerchantDetails, MerchantDomestic $MerchantDomestic)
     {
 
-        // dd($request);
+        // dd($request->toArray());
 
 
-        // Kondisi apakah update ini berhubungan dengan MCC atau tidak
         if ($request->has('merchantType')) {
             return $this->editMcc($request);
         }
+
+        // Validasi dan mendapatkan entitas terkait
+        $activity_type = 'REQUEST';
+        $comment = 'UPDATE REQUEST';
+        $action = 'UPDATE';
+
+        // Mendapatkan data dari request untuk update merchant
+        $merchant = Merchant::find($request->ID_MERCHANT);
+        $merchant_detail = MerchantDetails::find($request->ID_MERCHANT_DETAILS);
+        $merchantDomestic = MerchantDomestic::find($request->ID_MERCHANT_DOMESTIC);
+
+        // Log aktivitas untuk REQUEST
+        $raw_request = json_encode($request->toArray());
+        // dd($raw_request);
+        $this->logMerchantActivityNew($raw_request, null, $comment, $action, $activity_type);
+
+
+        // $this->logMerchantActivity($merchant, null, null, null, $merchant_detail, $merchantDomestic, $comment, $action, $activity_type);
 
         if (!isset($request->merchant->NMID)) {
 
@@ -412,6 +451,7 @@ class MerchantController extends Controller
 
 
 
+
             $date = date('Y-m-d H:i:s');
             $nmid = 'ID' . genID(13);
             $nns = '93600521';
@@ -420,10 +460,22 @@ class MerchantController extends Controller
             Log::channel('merchant')->info('DONE UPDATE TANPA NMID ==============================================================================');
 
 
+            $activity_type = 'RESPONSE';
+            $comment = 'UPDATE SUCCESS';
+            $action = 'UPDATE';
+
+            $raw_response = json_encode([
+                'merchant' => $merchant,
+                'merchant_details' => $merchant_detail,
+                'merchant_domestic' => $merchantDomestic
+            ]);
+
+            $this->logMerchantActivityNew(null, $raw_response, $comment, $action, $activity_type);
 
             $request['editMerchantTanpaNmid'] = true;
             $spreadsheet = $this->generateMerchantExcel($request);
-            $this->saveExcelFile($spreadsheet, $request);
+            $this->saveExcelFile($spreadsheet, $request, 'add');
+
             return redirect()
                 ->route('merchant.index')
                 ->with('success', 'Merchant updated successfully');
@@ -431,7 +483,7 @@ class MerchantController extends Controller
             $request['editMerchant'] = true;
             Log::channel('merchant')->info('DONE UPDATE NMID ==============================================================================');
             $spreadsheet = $this->generateMerchantExcel($request);
-            $this->saveExcelFile($spreadsheet, $request);
+            $this->saveExcelFile($spreadsheet, $request, 'update');
         }
         return redirect()
             ->route('merchant.index')
@@ -600,17 +652,17 @@ class MerchantController extends Controller
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-        
+
             // Setup titles
             $sheet->setCellValue('A1', 'FORM UPDATE');
             $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
             $sheet->mergeCells('A1:P1'); // Merging title
             $sheet->mergeCells('A2:P2'); // Merging subtitle
-        
+
             // Applying styles to the merged headers
             $sheet->getStyle('A1:P2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('A1:P2')->getFont()->setBold(true);
-        
+
             // Header row for "Mandatory"
             $sheet->setCellValue('B3', 'Mandatory');
             $sheet->mergeCells('B3:N3');
@@ -619,7 +671,7 @@ class MerchantController extends Controller
             $sheet->getStyle('B3')->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
-        
+
             // Headers for columns
             $headers = [
                 'A3' => 'No.',
@@ -639,7 +691,7 @@ class MerchantController extends Controller
                 'O3' => 'NMID',
                 'P3' => 'Keterangan UPDATE'
             ];
-        
+
             foreach ($headers as $cell => $value) {
                 $sheet->getStyle($cell)->getFill()
                     ->setFillType(Fill::FILL_SOLID)
@@ -655,12 +707,12 @@ class MerchantController extends Controller
                     ],
                 ]);
             }
-        
+
             // Merge cells for headers
             $sheet->mergeCells('A3:A4');
             $sheet->mergeCells('O3:O4');
             $sheet->mergeCells('P3:P4');
-        
+
             // Adding actual data at row 5
             $data = [
                 'A5' => '1',
@@ -680,7 +732,7 @@ class MerchantController extends Controller
                 'O5' => $request->NMID,
                 'P5' => $request->KETERANGAN_UPDATE,
             ];
-        
+
             foreach ($data as $cell => $value) {
                 $sheet->setCellValue($cell, $value);
                 // Apply border to each data cell
@@ -693,7 +745,7 @@ class MerchantController extends Controller
                     ],
                 ]);
             }
-        
+
             // Apply borders to the entire data range
             $sheet->getStyle('A3:P5')->applyFromArray([
                 'borders' => [
@@ -703,10 +755,9 @@ class MerchantController extends Controller
                     ],
                 ],
             ]);
-        
+
             return $spreadsheet;
-        }
-         else if ($request->editMerchantTanpaNmid === true) {
+        } else if ($request->editMerchantTanpaNmid === true) {
 
 
             $spreadsheet = new Spreadsheet();
@@ -806,7 +857,7 @@ class MerchantController extends Controller
         }
     }
 
-    public function saveExcelFile($spreadsheet, $request)
+    public function saveExcelFile($spreadsheet, $request, $operationType = 'add')
     {
         $appEnv = getenv('APP_ENV');
         $dateNow = date('Ymd');
@@ -830,18 +881,17 @@ class MerchantController extends Controller
                 die('Invalid environment.');
         }
 
-        function getNextBatchNumber($storagePath, $dateNow)
+        function getNextBatchNumber($storagePath, $dateNow, $operationType)
         {
-            $batchNumber = 0; // Mulai dari 0 untuk mengecek apakah ada file sama sekali
-            $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
+            $batchNumber = 0;
+            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
+            $firstFileExists = file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '.xlsx');
 
-            // Jika file tanpa batch sudah ada, mulai cek dari batch 2
             if ($firstFileExists) {
                 $batchNumber = 2;
             }
 
-            // Mengecek keberadaan file dengan nama batch selanjutnya
-            while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+            while (file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                 $batchNumber++;
             }
 
@@ -851,8 +901,9 @@ class MerchantController extends Controller
 
         if ($appEnv === 'local') {
             // Logika download file untuk environment local
-            $batchNumber = getNextBatchNumber($storagePath, $dateNow); // Dapatkan batch number yang sesuai
-            $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
+            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
+            $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             $writer = new Xlsx($spreadsheet);
@@ -869,8 +920,9 @@ class MerchantController extends Controller
             }
 
             // Simpan file ke disk untuk environment prod dan dev
-            $batchNumber = getNextBatchNumber($storagePath, $dateNow);
-            $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
+            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
+            $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
             $path = $storagePath . '/' . $filename;
             $writer = new Xlsx($spreadsheet);
             $writer->save($path);
@@ -1049,6 +1101,105 @@ class MerchantController extends Controller
             return response()->json([
                 'error' => ' (Invalid Account Number) ',
             ]);
+        }
+    }
+
+    private function logMerchantActivityNew($raw_request, $raw_response, $comment, $action, $activity_type)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                throw new \Exception("User not authenticated");
+            }
+
+            $ip_address = request()->ip();
+
+            $merchant_id = null;
+            $nmid = null;
+
+            if ($raw_request) {
+                $raw_request_data = json_decode($raw_request);
+
+                $merchant_id = isset($raw_request_data->ID_MERCHANT) ? $raw_request_data->ID_MERCHANT : null;
+                $nmid = isset($raw_request_data->NMID) ? $raw_request_data->NMID : null;
+            }
+
+            if ($raw_response) {
+                $raw_response_data = json_decode($raw_response);
+
+                $merchant_id = isset($raw_response_data->merchant->ID) ? $raw_response_data->merchant->ID : $merchant_id;
+                $nmid = isset($raw_response_data->merchant->NMID) ? $raw_response_data->merchant->NMID : $nmid;
+            }
+
+            $raw_data = $raw_request ? $raw_request : $raw_response;
+
+            QrisMerchantActivity::create([
+                'merchant_id' => $merchant_id,
+                'nmid' => $nmid,
+                'raw' => $raw_data, // Simpan raw_request atau raw_response ke field RAW
+                'user_id' => $user->id,
+                'action' => $action,
+                'ip_address' => $ip_address,
+                'comment' => $comment,
+                'activity_type' => $activity_type,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error logging merchant activity: ' . $e->getMessage());
+        }
+    }
+
+    private function logMerchantActivity($data_merchant, $data_detail, $data_domestic, $merchants, $merchant_detail, $merchantDomestic, $comment, $action, $activity_type)
+    {
+        // dd($data_merchant, $data_detail, $data_domestic, json_encode($merchants), $merchant_detail, $merchantDomestic, $comment, $action, $activity_type);
+        try {
+
+            // if (!$merchant) {
+            //     throw new \Exception("Merchant data not found");
+            // }
+
+            // Mendapatkan data mentah dari masing-masing entitas
+            $raw_merchant = $merchants ? json_encode($merchants) : $data_merchant;
+            $raw_merchant_details = $merchant_detail ? json_encode($merchant_detail) : $data_detail;
+            $raw_merchant_dom = $merchantDomestic ? json_encode($merchantDomestic) : $data_domestic;
+
+
+            // Menggabungkan data request untuk dimasukkan ke dalam RAW_REQUEST
+            $raw_request = json_encode([
+                'merchant' => $data_merchant,
+                'merchant_details' => $data_detail,
+                'merchant_domestic' => $data_domestic
+            ]);
+
+            // dd($raw_request);
+
+            // Mendapatkan user dan data mentahnya
+            $user = Auth::user();
+            if (!$user) {
+                throw new \Exception("User not authenticated");
+            }
+
+            $raw_user = $user->toJson();
+
+            // Simpan aktivitas ke tabel QrisMerchantActivity
+            QrisMerchantActivity::create([
+                'merchant_id' => $merchants ? $merchants->ID : null,
+                'nmid' => $merchants ? $merchants->NMID : null,
+                // 'raw_merchant' => $raw_merchant,
+                'raw_merchant_details' => $raw_merchant_details,
+                'raw_merchant_dom' => $raw_merchant_dom,
+                'raw_user' => $raw_user,
+                'user_id' => $user->id,
+                'action' => $action,
+                'ip_address' => request()->ip(),
+                'old_value' => '',
+                'new_value' => '',
+                'comment' => $comment,
+                'activity_type' => $activity_type,
+                'raw_request' => $raw_request,
+            ]);
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            Log::error('Error logging merchant activity: ' . $e->getMessage());
         }
     }
 }
