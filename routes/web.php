@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Mews\Captcha\Captcha;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('auth.login');
+});
+
+Route::get('captcha/{config?}', [Captcha::class, 'create'])->name('captcha');
+Route::get('captcha-refresh', function () {
+    return response()->json(['captcha' => captcha_img()]);
 });
 
 Route::get('/get-kota/{provinsi}', function($provinsi) {

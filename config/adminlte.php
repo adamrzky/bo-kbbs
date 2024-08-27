@@ -107,7 +107,7 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        'enabled' => false,
         'img' => [
             'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
             'alt' => 'AdminLTE Preloader Image',
@@ -341,7 +341,7 @@ return [
         [
             'text' => 'Merchant Management',
           
-            'icon' => 'fas fa-fw fa-share',
+            'icon' => 'fas fa-fw fa-store',
             'submenu' => [
                 [
                     'text' => 'Manage Merchant',
@@ -356,14 +356,14 @@ return [
             ],
         ],
         [
-            'text' => 'Generate QRIS',
+            'text' => 'QRIS Management',
             'url'  => 'qris',
-            'icon' => 'fas fa-fw fa-share',
+            'icon' => 'fas fa-solid fa-qrcode',
         ],
         [
             'text' => 'Refund',
             'url'  => 'refund',
-            'icon' => 'fas fa-fw fa-share',
+            'icon' => 'fas fa-solid fa-backward',
         ],
         [
             'text' => 'Transaction',
