@@ -97,7 +97,8 @@ Route::group(['middleware' => ['auth']], function() {
     Route::get('/merchant/create', 'MerchantController@create')->name('merchant.create');
     Route::put('/merchant/update/{merchant}', 'MerchantController@update')->name('merchant.update');
     Route::post('/merchant/store', 'MerchantController@store')->name('merchant.store');
-    Route::delete('/merchant/{merchant}/destroy', 'MerchantController@destroy')->name('merchant.destroy');
+    Route::get('/merchant/{id}/delete', 'MerchantController@delete')->name('merchant.delete');
+    Route::put('/merchant/destroy/{merchant}', 'MerchantController@destroy')->name('merchant.destroy');
     Route::post('/merchant/saldo', 'MerchantController@saldo')->name('merchant.saldo');
     Route::post('/merchant/mutasi', 'MerchantController@mutasi')->name('merchant.mutasi');
     Route::post('/merchant/cekNorek', 'MerchantController@rekening')->name('merchant.rekening');

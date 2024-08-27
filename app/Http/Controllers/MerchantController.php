@@ -87,12 +87,12 @@ class MerchantController extends Controller
         $criteria = Criteria::orderBy('NO')->get()->toArray();
         $provinsi = Wilayah::select('PROVINSI')->distinct()->get(); // Ambil daftar provinsi yang unik
         $cabangs = Cabang::all();
-        
+
         $kota = Wilayah::where('PROVINSI', $provinsi)->get(['ID', 'DAERAH_TINGKAT']);
-    
+
         return view('merchant.create', compact('mcc', 'criteria', 'provinsi', 'cabangs', 'kota'));
     }
-    
+
 
     /**
      * Store a newly created resource in storage.
@@ -264,7 +264,7 @@ class MerchantController extends Controller
             $this->logMerchantActivityNew(null, $raw_response, $comment, $action, $activity_type);
 
 
-          
+
 
 
             // $param = [
@@ -853,78 +853,216 @@ class MerchantController extends Controller
             }
 
             return $spreadsheet;
+        } else if ($request->deleteMerchant === true) {
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Setup titles
+            $sheet->setCellValue('A1', 'FORM PENGHAPUSAN');
+            $sheet->setCellValue('A2', 'NATIONAL MERCHANT REPOSITORY QRIS');
+            $sheet->mergeCells('A1:P1'); // Merging title
+            $sheet->mergeCells('A2:P2'); // Merging subtitle
+
+            // Applying styles to the merged headers
+            $sheet->getStyle('A1:P2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A1:P2')->getFont()->setBold(true);
+
+            // Header row for "Mandatory"
+            $sheet->setCellValue('B3', 'Mandatory');
+            $sheet->mergeCells('B3:N3');
+            $sheet->getStyle('B3:N3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('B3:N3')->getFont()->setBold(true);
+            $sheet->getStyle('B3')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+
+            // Headers for columns
+            $headers = [
+                'A3' => 'No.',
+                'B4' => 'Nama Merchant (max 50)',
+                'C4' => 'Nama Merchant (max 25)',
+                'D4' => 'MPAN',
+                'E4' => 'MID',
+                'F4' => 'Kota',
+                'G4' => 'Kodepos',
+                'H4' => 'Kriteria',
+                'I4' => 'MCC',
+                'J4' => 'Jml Terminal',
+                'K4' => 'Tipe Merchant',
+                'L4' => 'NPWP',
+                'M4' => 'KTP',
+                'N4' => 'Tipe QR',
+                'O3' => 'NMID',
+                'P3' => 'Keterangan Delete',
+                'Q3' => 'Keterangan Fraud',
+                'Q4' => 'Pemilik',
+                'R4' => 'HP Pemilik',
+                'S4' => 'Alamat Toko',
+                'T4' => 'Fraud Detail',
+            ];
+
+            foreach ($headers as $cell => $value) {
+                $sheet->getStyle($cell)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFF00'); // Yellow color for mandatory
+                $sheet->setCellValue($cell, $value);
+                // Apply border and styling for all headers
+                $sheet->getStyle($cell)->applyFromArray([
+                    'borders' => [
+                        'outline' => [
+                            'borderStyle' => Border::BORDER_MEDIUM,
+                            'color' => ['argb' => '000000'],
+                        ],
+                    ],
+                ]);
+            }
+
+            // Merge cells for headers
+            $sheet->mergeCells('A3:A4');
+            $sheet->mergeCells('O3:O4');
+            $sheet->mergeCells('P3:P4');
+
+            // Adding actual data at row 5
+            $data = [
+                'A5' => '1',
+                'B5' => $request->MERCHANT_NAME,
+                'C5' => strlen($request->MERCHANT_NAME) > 25 ? substr($request->MERCHANT_NAME, 0, 25) : $request->MERCHANT_NAME,
+                'D5' => "'" . $request->MPAN,
+                'E5' => $request->MID,
+                'F5' => $request->MERCHANT_CITY,
+                'G5' => $request->POSTAL_CODE,
+                'H5' => $request->CRITERIA,
+                'I5' => $request->MCC,
+                'J5' => '1',
+                'K5' => $request->MERCHANT_TYPE_2,
+                'L5' => "'" . $request->NPWP,
+                'M5' => "'" . $request->KTP,
+                'N5' => $request->QR_TYPE,
+                'O5' => $request->NMID,
+                'P5' => $request->KETERANGAN_UPDATE,
+            ];
+
+            foreach ($data as $cell => $value) {
+                $sheet->setCellValue($cell, $value);
+                // Apply border to each data cell
+                $sheet->getStyle($cell)->applyFromArray([
+                    'borders' => [
+                        'outline' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['argb' => '000000'],
+                        ],
+                    ],
+                ]);
+            }
+
+            // Apply borders to the entire data range
+            $sheet->getStyle('A3:P5')->applyFromArray([
+                'borders' => [
+                    'outline' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['argb' => '000000'],
+                    ],
+                ],
+            ]);
+
+            return $spreadsheet;
+
         }
     }
 
     public function saveExcelFile($spreadsheet, $request, $operationType = 'add')
     {
-        $appEnv = getenv('APP_ENV');
-        $dateNow = date('Ymd');
-        $baseDir = '/home/share/test/KBBS_OUT/';
-        $baseDir2 = '/home/adam/test/KBBS_OUT/';
+        // 1. Konfigurasi penyimpanan file berdasarkan environment
+        $appEnv = app()->environment(); 
+        $dateNow = now()->format('Ymd'); 
+        $baseDir = config('app.excel_export_base_dir'); 
         $folderName = $dateNow;
-        $storagePathProd = $baseDir . $folderName;
-        $storagePathDev = $baseDir2 . $folderName;
-
-        switch ($appEnv) {
-            case 'prod':
-                $storagePath = $storagePathProd;
-                break;
-            case 'dev':
-                $storagePath = $storagePathDev;
-                break;
-            case 'local':
-                $storagePath = null;
-                break;
-            default:
-                die('Invalid environment.');
-        }
-
+        $storagePath = $baseDir . $folderName;
+    
+        // 2. Fungsi untuk mendapatkan nomor batch berikutnya
         function getNextBatchNumber($storagePath, $dateNow, $operationType)
         {
             $batchNumber = 0;
-            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
-            $firstFileExists = file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '.xlsx');
-
-            if ($firstFileExists) {
-                $batchNumber = 2;
+    
+            // Ganti match expression dengan switch-case
+            switch ($operationType) {
+                case 'update':
+                    $filePrefix = 'UPDATE_QRIS_NMR_';
+                    break;
+                case 'delete':
+                    $filePrefix = 'DELETE_QRIS_NMR_';
+                    break;
+                default:
+                    $filePrefix = 'QRIS_NMR_';
+                    break;
             }
-
+    
+            $firstFileExists = file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '.xlsx');
+    
+            if ($firstFileExists) {
+                $batchNumber = 2; 
+            }
+    
             while (file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                 $batchNumber++;
             }
-
+    
             return $batchNumber;
         }
-
-
+    
+        // 3. Logika penyimpanan file berdasarkan environment
         if ($appEnv === 'local') {
-            // Logika download file untuk environment local
+            // Download langsung untuk environment local
             $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
-            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
-            $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-            exit;
-        } else {
-            // Mengecek dan membuat direktori jika belum ada
-            if (!file_exists($storagePath)) {
-                if (!mkdir($storagePath, 0775, true)) {
-                    // Jika pembuatan direktori gagal, catat error dan kirim response error
-                    error_log("Failed to create directory at $storagePath");
-                    return response()->json(['error' => 'Failed to create directory'], 500);
-                }
+    
+            // Ganti match expression dengan switch-case
+            switch ($operationType) {
+                case 'update':
+                    $filePrefix = 'UPDATE_QRIS_NMR_';
+                    break;
+                case 'delete':
+                    $filePrefix = 'DELETE_QRIS_NMR_';
+                    break;
+                default:
+                    $filePrefix = 'QRIS_NMR_';
+                    break;
             }
-
-            // Simpan file ke disk untuk environment prod dan dev
+    
+            $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+    
+            // Set header untuk download
+            return Excel::download(new MerchantsExport, $filename); 
+    
+        } else {
+            // Simpan ke disk untuk environment production atau development
+            
+            // Pastikan direktori tujuan ada
+            if (!file_exists($storagePath) && !mkdir($storagePath, 0775, true) && !is_dir($storagePath)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $storagePath));
+            }
+    
             $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
-            $filePrefix = $operationType === 'update' ? 'UPDATE_QRIS_NMR_' : 'QRIS_NMR_';
+    
+            // Ganti match expression dengan switch-case
+            switch ($operationType) {
+                case 'update':
+                    $filePrefix = 'UPDATE_QRIS_NMR_';
+                    break;
+                case 'delete':
+                    $filePrefix = 'DELETE_QRIS_NMR_';
+                    break;
+                default:
+                    $filePrefix = 'QRIS_NMR_';
+                    break;
+            }
+    
             $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
             $path = $storagePath . '/' . $filename;
+    
             $writer = new Xlsx($spreadsheet);
             $writer->save($path);
+    
             Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
         }
     }
@@ -1197,8 +1335,40 @@ class MerchantController extends Controller
                 'raw_request' => $raw_request,
             ]);
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             Log::error('Error logging merchant activity: ' . $e->getMessage());
         }
+    }
+
+    public function delete(Merchant $merchant, $id)
+    {
+
+        $id = Crypt::decrypt($id);
+        $merchant = Merchant::where('id', $id)->first();
+        $mcc = Mcc::orderBy('DESC_MCC')
+            ->get()
+            ->toArray();
+        $criteria = getCriteria();
+        $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
+        $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
+        return view('merchant.delete', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
+    }
+
+    public function destroy(Request $request, $id)
+    {
+
+        $id = Crypt::decrypt($id);
+        $merchant = Merchant::where('id', $id)->first();
+
+        $request = $merchant;
+
+        dd($request);
+
+        // return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
+
+        $request['deleteMerchant'] = true;
+        Log::channel('merchant')->info('REQ DELETE MERCHANT ==============================================================================');
+        $spreadsheet = $this->generateMerchantExcel($request);
+        $this->saveExcelFile($spreadsheet, $request, 'delete');
     }
 }

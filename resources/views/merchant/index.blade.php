@@ -60,9 +60,12 @@
             @can('merchant-edit')
             <a class="btn btn-warning" href="{{ route('merchant.edit',Crypt::encrypt($row->ID)) }}">Edit</a>
             @endcan
-
+            
             <button class="btn btn-success" onclick="ceksaldo(`{{ Crypt::encrypt($row->ID) }}`)">Saldo</button>
             <button class="btn btn-primary" onclick="cekmutasi(`{{ Crypt::encrypt($row->ID) }}`)">Mutasi</button>
+            @can('merchant-delete')
+            <a class="btn btn-danger" href="{{ route('merchant.delete',Crypt::encrypt($row->ID)) }}">Delete</a>
+            @endcan
         </td>
     </tr>
     @endforeach
