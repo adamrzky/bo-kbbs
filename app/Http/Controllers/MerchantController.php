@@ -277,8 +277,8 @@ class MerchantController extends Controller
             // Generate Excel if Merchant exists
             if (isset($merchants)) {
                 $request['addMerchant'] = true;
-                // $spreadsheet = $this->generateMerchantExcel($request);
-                // $this->saveExcelFile($spreadsheet, $request);
+                $spreadsheet = $this->generateMerchantExcel($request);
+                $this->saveExcelFile($spreadsheet, $request);
             }
 
 
@@ -855,6 +855,8 @@ class MerchantController extends Controller
             return $spreadsheet;
         } else if ($request->deleteMerchant === true) {
 
+            // dd($request);
+
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
@@ -957,7 +959,7 @@ class MerchantController extends Controller
             }
 
             // Apply borders to the entire data range
-            $sheet->getStyle('A3:P5')->applyFromArray([
+            $sheet->getStyle('A3:T5')->applyFromArray([
                 'borders' => [
                     'outline' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -967,24 +969,23 @@ class MerchantController extends Controller
             ]);
 
             return $spreadsheet;
-
         }
     }
 
     public function saveExcelFile($spreadsheet, $request, $operationType = 'add')
     {
         // 1. Konfigurasi penyimpanan file berdasarkan environment
-        $appEnv = app()->environment(); 
-        $dateNow = now()->format('Ymd'); 
-        $baseDir = config('app.excel_export_base_dir'); 
+        $appEnv = app()->environment();
+        $dateNow = now()->format('Ymd');
+        $baseDir = config('app.excel_export_base_dir');
         $folderName = $dateNow;
         $storagePath = $baseDir . $folderName;
-    
+
         // 2. Fungsi untuk mendapatkan nomor batch berikutnya
         function getNextBatchNumber($storagePath, $dateNow, $operationType)
         {
             $batchNumber = 0;
-    
+
             // Ganti match expression dengan switch-case
             switch ($operationType) {
                 case 'update':
@@ -997,26 +998,26 @@ class MerchantController extends Controller
                     $filePrefix = 'QRIS_NMR_';
                     break;
             }
-    
+
             $firstFileExists = file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '.xlsx');
-    
+
             if ($firstFileExists) {
-                $batchNumber = 2; 
+                $batchNumber = 2;
             }
-    
+
             while (file_exists($storagePath . '/' . $filePrefix . '93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
                 $batchNumber++;
             }
-    
+
             return $batchNumber;
         }
-    
+
         // 3. Logika penyimpanan file berdasarkan environment
         if ($appEnv === 'local') {
             // Download langsung untuk environment local
             $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
-    
-            // Ganti match expression dengan switch-case
+        
+            // Tentukan prefix file berdasarkan operationType (ganti match dengan switch)
             switch ($operationType) {
                 case 'update':
                     $filePrefix = 'UPDATE_QRIS_NMR_';
@@ -1028,22 +1029,28 @@ class MerchantController extends Controller
                     $filePrefix = 'QRIS_NMR_';
                     break;
             }
-    
+        
             $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-    
+        
             // Set header untuk download
-            return Excel::download(new MerchantsExport, $filename); 
-    
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+        
+            // Simpan file ke output
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        
+            exit; // Hentikan eksekusi script setelah download
         } else {
             // Simpan ke disk untuk environment production atau development
-            
+
             // Pastikan direktori tujuan ada
             if (!file_exists($storagePath) && !mkdir($storagePath, 0775, true) && !is_dir($storagePath)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $storagePath));
             }
-    
+
             $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
-    
+
             // Ganti match expression dengan switch-case
             switch ($operationType) {
                 case 'update':
@@ -1056,13 +1063,13 @@ class MerchantController extends Controller
                     $filePrefix = 'QRIS_NMR_';
                     break;
             }
-    
+
             $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
             $path = $storagePath . '/' . $filename;
-    
+
             $writer = new Xlsx($spreadsheet);
             $writer->save($path);
-    
+
             Log::channel('merchant')->info('UPDATED FILE EXCEL : ' . $path);
         }
     }
@@ -1354,17 +1361,8 @@ class MerchantController extends Controller
         return view('merchant.delete', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request)
     {
-
-        $id = Crypt::decrypt($id);
-        $merchant = Merchant::where('id', $id)->first();
-
-        $request = $merchant;
-
-        dd($request);
-
-        // return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
 
         $request['deleteMerchant'] = true;
         Log::channel('merchant')->info('REQ DELETE MERCHANT ==============================================================================');
