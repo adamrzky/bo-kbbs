@@ -22,19 +22,31 @@
                 <div class="row">
                     <div class="form-group col-12 text-center">
                         @if ($imageExists)
-                            <button type="button" class="btn btn-primary" onclick="toggleQrCode()">Tampilkan QR Code</button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#qrCodeModal">
+                                Tampilkan QR Code
+                            </button>
                             <a href="{{ asset($imagePath) }}" class="btn btn-success" download>Download QR Code</a>
-                            <div id="qrCodeContainer" style="display:none;"> 
-                                <img src="{{ asset($imagePath) }}" alt="QR Code" style="max-width: 300px;">
+
+                            <div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog"
+                                aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lgheader">
+                                    <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+
+                                    <img src="{{ asset($imagePath) }}" alt="QR Code" style="max-width: 100%;">
+                                </div>
                             </div>
-                        @else
-                            <p>QR Code tidak tersedia.</p>
-                        @endif
                     </div>
                 </div>
+            @else
+                <p>QR Code tidak tersedia.</p>
+                @endif
             </div>
         </div>
     </div>
+
 
     <div class="row">
         {{-- Card untuk data $merchant --}}
@@ -46,10 +58,10 @@
                 <div class="card-body">
                     <div class="row">
                         @foreach ($merchant->toArray() as $key => $value)
-                        <div class="form-group col-6">
-                            <label>{{ $key }}</label>
-                            <input type="text" class="form-control" value="{{ $value }}" readonly>
-                        </div>
+                            <div class="form-group col-6">
+                                <label>{{ $key }}</label>
+                                <input type="text" class="form-control" value="{{ $value }}" readonly>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -65,10 +77,10 @@
                 <div class="card-body">
                     <div class="row">
                         @foreach ($merchant_detail->toArray() as $key => $value)
-                        <div class="form-group col-6">
-                            <label>{{ $key }}</label>
-                            <input type="text" class="form-control" value="{{ $value }}" readonly>
-                        </div>
+                            <div class="form-group col-6">
+                                <label>{{ $key }}</label>
+                                <input type="text" class="form-control" value="{{ $value }}" readonly>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -84,10 +96,10 @@
                 <div class="card-body">
                     <div class="row">
                         @foreach ($merchant_domestic->toArray() as $key => $value)
-                        <div class="form-group col-6">
-                            <label>{{ $key }}</label>
-                            <input type="text" class="form-control" value="{{ $value }}" readonly>
-                        </div>
+                            <div class="form-group col-6">
+                                <label>{{ $key }}</label>
+                                <input type="text" class="form-control" value="{{ $value }}" readonly>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -105,4 +117,4 @@
             qrCodeContainer.style.display = 'none';
         }
     }
-    </script>
+</script>

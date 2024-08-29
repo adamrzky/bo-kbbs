@@ -53,10 +53,20 @@ class QrisController extends Controller
 
         // $merchant = Merchant::orderBy('ID')->get()->toArray();
 
-        // dd($merchant);
+        // dd($merchant[0]->NMID);
 
         $qrType = getQrtype();
-        return view('qris.index', compact('qrType', 'merchant'));
+
+          // Bangun path file gambar berdasarkan NMID
+          $nmid = $merchant[0]->NMID;
+          $imagePath = "/opt/vsi-scheduler-qris-acquirer/data_pten/{$nmid}_A01.png";
+  
+          // dd($imagePath);
+  
+          // Periksa apakah file gambar ada
+          $imageExists = file_exists($imagePath);
+
+        return view('qris.index', compact('qrType', 'merchant', 'imagePath', 'imageExists'));
     }
 
     public function hit(Request $request)

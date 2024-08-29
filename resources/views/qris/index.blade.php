@@ -76,7 +76,8 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>AMOUNT:</label>
-                                <input type="text" id="AMOUNT" name="AMOUNT" class="form-control" placeholder="Min 10.000">
+                                <input type="text" id="AMOUNT" name="AMOUNT" class="form-control"
+                                    placeholder="Min 10.000">
                             </div>
                             <div class="form-group col-6">
                                 <label>TIP_INDICATOR:</label>
@@ -138,107 +139,141 @@
     </div>
 
 
-    <script>
-        //button create post event
-        $(document).ready(function() {
-            $('.select2').select2();
-        });
+    <div class="col-md-12">
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">QR STATIS</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="form-group col-12 text-center">
+                        @if ($imageExists)
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#qrCodeModal">
+                                Tampilkan QR Code
+                            </button>
+                            <a href="{{ asset($imagePath) }}" class="btn btn-success" download>Download QR Code</a>
 
-        //disable amount if dinamis qr selected
-        function checkQRType() {
-            var qrType = document.getElementById("TYPE").value;
-            var amountInput = document.getElementById("AMOUNT");
+                            <div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog"
+                                aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lgheader">
+                                    <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
 
-            if (qrType === "STATIS") {
-                amountInput.disabled = true;
-            } else {
-                amountInput.disabled = false;
-            }
-        }
+                                    <img src="{{ asset($imagePath) }}" alt="QR Code" style="max-width: 100%;">
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            @else
+                <p>QRIS Statis tidak tersedia.</p>
+                @endif
+            </div>
+        </div>
+    </div>
 
-
-
-
-        //action create post
-        $('#store').click(function(e) {
-            e.preventDefault();
-
-            // Tampilkan animasi loading
-            $('#loading').show();
-
-            // Nonaktifkan tombol submit
-            $(this).prop('disabled', true);
-
-            let qrType = $('#qrType').val();
-            let MERCHANT_ID = $('#MERCHANT_ID').val();
-            let AMOUNT = $('#AMOUNT').val();
-            let TIP_INDICATOR = $('#TIP_INDICATOR').val();
-            let FEE_AMOUNT = $('#FEE_AMOUNT').val();
-            let FEE_AMOUNT_PERCENTAGE = $('#FEE_AMOUNT_PERCENTAGE').val();
-            let TYPE = $('#TYPE').val();
-            let token = $("meta[name='csrf-token']").attr("content");
-
-            $.ajax({
-                url: `qris/hit`,
-                type: "POST",
-                cache: false,
-                data: {
-                    "qrType": qrType,
-                    "MERCHANT_ID": MERCHANT_ID,
-                    "AMOUNT": AMOUNT,
-                    "TIP_INDICATOR": TIP_INDICATOR,
-                    "FEE_AMOUNT": FEE_AMOUNT,
-                    "FEE_AMOUNT_PERCENTAGE": FEE_AMOUNT_PERCENTAGE,
-                    "TYPE": TYPE,
-                    "_token": token
-                },
-                success: function(response) {
-                    $("#modalQr").modal('show');
-                    $('#previewQr').html(`<img src="data:image/png;base64,` + response.qr + `" \>`);
-                    $('#errorResp').html(JSON.stringify(response.error));
-
-                    // Sembunyikan animasi loading
-                    $('#loading').hide();
-
-                    // Aktifkan kembali tombol submit
-                    $('#store').prop('disabled', false);
-                },
-                error: function(error) {
-                    $("#modalQr").modal('show');
-                    // Sembunyikan animasi loading
-                    $('#loading').hide();
-
-                    // Aktifkan kembali tombol submit
-                    $('#store').prop('disabled', false);
-                }
-            });
-        });
-
-
-        // Tindakan saat tombol Simpan diklik
-        $('#btnSave').click(function() {
-            // Tambahkan kode untuk menyimpan QR di sini
-            alert('QR berhasil disimpan.');
-        });
-
-        // Tindakan saat tombol Unduh diklik
-        $('#btnDownload').click(function() {
-            // Mendapatkan gambar QR dari elemen img di dalam modal
-            var qrImage = $('#previewQr img').attr('src');
-
-            // Membuat elemen <a> untuk mengunduh gambar
-            var downloadLink = document.createElement('a');
-            downloadLink.href = qrImage;
-            downloadLink.download = 'QR_Code.png';
-
-            // Menambahkan elemen <a> ke dalam dokumen dan mengkliknya secara otomatis
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-
-            alert('QR berhasil diunduh.');
-        });
-    </script>
-    
 
 @endsection
+
+<script>
+    //button create post event
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+
+    //disable amount if dinamis qr selected
+    function checkQRType() {
+        var qrType = document.getElementById("TYPE").value;
+        var amountInput = document.getElementById("AMOUNT");
+
+        if (qrType === "STATIS") {
+            amountInput.disabled = true;
+        } else {
+            amountInput.disabled = false;
+        }
+    }
+
+
+
+
+    //action create post
+    $('#store').click(function(e) {
+        e.preventDefault();
+
+        // Tampilkan animasi loading
+        $('#loading').show();
+
+        // Nonaktifkan tombol submit
+        $(this).prop('disabled', true);
+
+        let qrType = $('#qrType').val();
+        let MERCHANT_ID = $('#MERCHANT_ID').val();
+        let AMOUNT = $('#AMOUNT').val();
+        let TIP_INDICATOR = $('#TIP_INDICATOR').val();
+        let FEE_AMOUNT = $('#FEE_AMOUNT').val();
+        let FEE_AMOUNT_PERCENTAGE = $('#FEE_AMOUNT_PERCENTAGE').val();
+        let TYPE = $('#TYPE').val();
+        let token = $("meta[name='csrf-token']").attr("content");
+
+        $.ajax({
+            url: `qris/hit`,
+            type: "POST",
+            cache: false,
+            data: {
+                "qrType": qrType,
+                "MERCHANT_ID": MERCHANT_ID,
+                "AMOUNT": AMOUNT,
+                "TIP_INDICATOR": TIP_INDICATOR,
+                "FEE_AMOUNT": FEE_AMOUNT,
+                "FEE_AMOUNT_PERCENTAGE": FEE_AMOUNT_PERCENTAGE,
+                "TYPE": TYPE,
+                "_token": token
+            },
+            success: function(response) {
+                $("#modalQr").modal('show');
+                $('#previewQr').html(`<img src="data:image/png;base64,` + response.qr + `" \>`);
+                $('#errorResp').html(JSON.stringify(response.error));
+
+                // Sembunyikan animasi loading
+                $('#loading').hide();
+
+                // Aktifkan kembali tombol submit
+                $('#store').prop('disabled', false);
+            },
+            error: function(error) {
+                $("#modalQr").modal('show');
+                // Sembunyikan animasi loading
+                $('#loading').hide();
+
+                // Aktifkan kembali tombol submit
+                $('#store').prop('disabled', false);
+            }
+        });
+    });
+
+
+    // Tindakan saat tombol Simpan diklik
+    $('#btnSave').click(function() {
+        // Tambahkan kode untuk menyimpan QR di sini
+        alert('QR berhasil disimpan.');
+    });
+
+    // Tindakan saat tombol Unduh diklik
+    $('#btnDownload').click(function() {
+        // Mendapatkan gambar QR dari elemen img di dalam modal
+        var qrImage = $('#previewQr img').attr('src');
+
+        // Membuat elemen <a> untuk mengunduh gambar
+        var downloadLink = document.createElement('a');
+        downloadLink.href = qrImage;
+        downloadLink.download = 'QR_Code.png';
+
+        // Menambahkan elemen <a> ke dalam dokumen dan mengkliknya secara otomatis
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        alert('QR berhasil diunduh.');
+    });
+</script>
