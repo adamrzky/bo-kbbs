@@ -298,14 +298,14 @@ class MerchantController extends Controller
     public function show(Merchant $merchant, $id)
     {
         $id = Crypt::decrypt($id);
-
+        $merchant = Merchant::where('id', $id)->first();
         $mcc = Mcc::orderBy('DESC_MCC')
             ->get()
             ->toArray();
         $criteria = getCriteria();
-        $merchant = Merchant::where('id', $id)->first();
         $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
-        return view('merchant.show', compact('mcc', 'criteria', 'merchant', 'merchant_detail'));
+        $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
+        return view('merchant.show', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
     }
 
 
