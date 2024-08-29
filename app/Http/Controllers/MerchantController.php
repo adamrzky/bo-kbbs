@@ -305,7 +305,17 @@ class MerchantController extends Controller
         $criteria = getCriteria();
         $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
         $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
-        return view('merchant.show', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
+
+        // Bangun path file gambar berdasarkan NMID
+        $nmid = $merchant->NMID;
+        $imagePath = "/opt/vsi-scheduler-qris-acquirer/data_pten/{$nmid}_A01.png";
+
+        // dd($imagePath);
+
+        // Periksa apakah file gambar ada
+        $imageExists = file_exists($imagePath);
+
+        return view('merchant.show', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic', 'imageExists', 'imagePath'));
     }
 
 
@@ -569,8 +579,8 @@ class MerchantController extends Controller
             $sheet->getColumnDimension('N')->setWidth(10);
             $sheet->getColumnDimension('O')->setWidth(20);
 
-             // Mengatur style untuk header (dengan border medium)
-             $headerStyle = [
+            // Mengatur style untuk header (dengan border medium)
+            $headerStyle = [
                 'font' => [
                     'bold' => true,
                 ],
@@ -937,8 +947,8 @@ class MerchantController extends Controller
             $sheet->getColumnDimension('T')->setWidth(20);
             $sheet->getColumnDimension('U')->setWidth(20);
 
-             // Mengatur style untuk header (dengan border medium)
-             $headerStyle = [
+            // Mengatur style untuk header (dengan border medium)
+            $headerStyle = [
                 'font' => [
                     'bold' => true,
                 ],

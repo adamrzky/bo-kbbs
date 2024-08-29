@@ -13,6 +13,29 @@
         </div>
     </section>
 
+    <div class="col-md-12">
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">QR Code</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="form-group col-12 text-center">
+                        @if ($imageExists)
+                            <button type="button" class="btn btn-primary" onclick="toggleQrCode()">Tampilkan QR Code</button>
+                            <a href="{{ asset($imagePath) }}" class="btn btn-success" download>Download QR Code</a>
+                            <div id="qrCodeContainer" style="display:none;"> 
+                                <img src="{{ asset($imagePath) }}" alt="QR Code" style="max-width: 300px;">
+                            </div>
+                        @else
+                            <p>QR Code tidak tersedia.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         {{-- Card untuk data $merchant --}}
         <div class="col-md-12">
@@ -72,3 +95,14 @@
         </div>
     </div>
 @endsection
+
+<script>
+    function toggleQrCode() {
+        var qrCodeContainer = document.getElementById('qrCodeContainer');
+        if (qrCodeContainer.style.display === 'none') {
+            qrCodeContainer.style.display = 'block';
+        } else {
+            qrCodeContainer.style.display = 'none';
+        }
+    }
+    </script>
