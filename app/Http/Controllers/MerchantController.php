@@ -925,6 +925,69 @@ class MerchantController extends Controller
             $sheet->mergeCells('O3:O4');
             $sheet->mergeCells('P3:P4');
 
+            $sheet->getColumnDimension('A')->setWidth(5);
+            $sheet->getColumnDimension('B')->setWidth(30);
+            $sheet->getColumnDimension('C')->setWidth(25);
+            $sheet->getColumnDimension('D')->setWidth(20);
+            $sheet->getColumnDimension('E')->setWidth(20);
+            $sheet->getColumnDimension('F')->setWidth(20);
+            $sheet->getColumnDimension('G')->setWidth(10);
+            $sheet->getColumnDimension('H')->setWidth(15);
+            $sheet->getColumnDimension('I')->setWidth(10);
+            $sheet->getColumnDimension('J')->setWidth(15);
+            $sheet->getColumnDimension('K')->setWidth(15);
+            $sheet->getColumnDimension('L')->setWidth(20);
+            $sheet->getColumnDimension('M')->setWidth(10);
+            $sheet->getColumnDimension('N')->setWidth(10);
+            $sheet->getColumnDimension('O')->setWidth(20);
+            $sheet->getColumnDimension('P')->setWidth(20);
+            $sheet->getColumnDimension('Q')->setWidth(15);
+            $sheet->getColumnDimension('R')->setWidth(15);
+            $sheet->getColumnDimension('S')->setWidth(15);
+            $sheet->getColumnDimension('T')->setWidth(20);
+            $sheet->getColumnDimension('U')->setWidth(20);
+
+            // Mengatur style untuk header (dengan border medium)
+            $headerStyle = [
+                'font' => [
+                    'bold' => true,
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => [
+                        'argb' => 'FFFF00',
+                    ],
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_MEDIUM,
+                        'color' => ['argb' => '000000'],
+                    ],
+                ],
+            ];
+
+            // Menerapkan style header ke seluruh rentang header (A3:U4)
+            $sheet->getStyle('A3:T4')->applyFromArray($headerStyle);
+
+            // Mengatur style untuk data
+            $dataStyle = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['argb' => '000000'],
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => [
+                        'argb' => 'DEEBF7', // Warna biru muda untuk baris data
+                    ],
+                ],
+            ];
+
+            // Menerapkan style data ke seluruh rentang data (A5:U5)
+            $sheet->getStyle('A5:T5')->applyFromArray($dataStyle);
+
             // Adding actual data at row 5
             $data = [
                 'A5' => '1',
@@ -947,26 +1010,7 @@ class MerchantController extends Controller
 
             foreach ($data as $cell => $value) {
                 $sheet->setCellValue($cell, $value);
-                // Apply border to each data cell
-                $sheet->getStyle($cell)->applyFromArray([
-                    'borders' => [
-                        'outline' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['argb' => '000000'],
-                        ],
-                    ],
-                ]);
             }
-
-            // Apply borders to the entire data range
-            $sheet->getStyle('A3:T5')->applyFromArray([
-                'borders' => [
-                    'outline' => [
-                        'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['argb' => '000000'],
-                    ],
-                ],
-            ]);
 
             return $spreadsheet;
         }
@@ -1016,7 +1060,7 @@ class MerchantController extends Controller
         if ($appEnv === 'local') {
             // Download langsung untuk environment local
             $batchNumber = getNextBatchNumber($storagePath, $dateNow, $operationType);
-        
+
             // Tentukan prefix file berdasarkan operationType (ganti match dengan switch)
             switch ($operationType) {
                 case 'update':
@@ -1029,17 +1073,17 @@ class MerchantController extends Controller
                     $filePrefix = 'QRIS_NMR_';
                     break;
             }
-        
+
             $filename = $filePrefix . '93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-        
+
             // Set header untuk download
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
+
             // Simpan file ke output
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
-        
+
             exit; // Hentikan eksekusi script setelah download
         } else {
             // Simpan ke disk untuk environment production atau development
