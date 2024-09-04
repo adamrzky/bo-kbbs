@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
+use Illuminate\Http\Request; // Tambahkan ini untuk menggunakan Request
+
+
 class LoginController extends Controller
 {
     /*
@@ -18,6 +21,22 @@ class LoginController extends Controller
     | to conveniently provide its functionality to your applications.
     |
     */
+
+    protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string', 
+
+            'password' => 'required|string',
+            'captcha' => 'required|captcha', 
+        ]);
+
+        if ($this->attemptLogin($request)) {
+            return $this->sendLoginResponse($request);
+        } else {
+            return $this->sendFailedLoginResponse($request);
+        }
+    }
 
     use AuthenticatesUsers;
 

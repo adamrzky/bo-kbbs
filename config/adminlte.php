@@ -63,12 +63,13 @@ return [
     |
     */
 
-    'logo' => '<b>QRIS Merchant KBBS</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    // 'logo' => '<b>QRIS Merchant KBBS</b>',
+    'logo' => '',
+    'logo_img' => 'vendor/adminlte/dist/img/LOGO-KB-BUKOPIN-SYARIAH.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
-    'logo_img_xl' => null,
+    'logo_img_xl' => 'vendor/adminlte/dist/img/LOGO-KB-BUKOPIN-SYARIAH.png',
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => 'KBBS',
 
     /*
     |--------------------------------------------------------------------------
@@ -86,8 +87,8 @@ return [
     'auth_logo' => [
         'enabled' => false,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'Auth Logo',
+            'path' => 'vendor/adminlte/dist/img/LOGO-KB-BUKOPIN-SYARIAH.png',
+            'alt' => 'KBBS',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -107,13 +108,13 @@ return [
     */
 
     'preloader' => [
-        'enabled' => false,
+        'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'vendor/adminlte/dist/img/LOGO-KB-BUKOPIN-SYARIAH.png',
+            'alt' => 'KBBS',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 500,
+            'height' => 360,
         ],
     ],
 
@@ -311,7 +312,7 @@ return [
             'url'  => 'admin/blog',
             'can'  => 'manage-blog',
         ],
-       
+
         // [
         //     'text'        => 'Manage Users',
         //     'url'         => 'users',
@@ -337,10 +338,10 @@ return [
         //     'label_color' => 'success',
         // ],
         // ['header' => 'test'],
-       
+
         [
             'text' => 'Merchant Management',
-          
+
             'icon' => 'fas fa-fw fa-store',
             'submenu' => [
                 [
@@ -351,8 +352,8 @@ return [
                     'text' => 'Manage Categories',
                     'url'  => 'merchantCategories',
                 ],
-              
-              
+
+
             ],
         ],
         [
@@ -393,7 +394,7 @@ return [
                     'text' => 'Manage Permissions',
                     'url'  => 'permissions',
                 ],
-              
+
             ],
         ],
         // [
