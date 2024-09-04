@@ -370,6 +370,11 @@ return [
             'url'  => 'transaction',
             'icon' => 'fa fa-fw fa-list',
         ],
+        [
+            'text' => 'Health Check Monitoring',
+            'url'  => 'health',
+            'icon' => 'fa fa-fw fa-heartbeat',
+        ],
 
         [
             'text'    => 'User Management',

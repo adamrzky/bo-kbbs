@@ -111,5 +111,9 @@ Route::group(['middleware' => ['auth']], function() {
     Route::get('/transaction/get', 'TransactionController@data')->name('transactions.data');
     // Route::get('/transaction/detail', 'TransactionController@detail')->name('transactions.detail');
     // Route::get('/transaction', [TransactionController::class, 'index']);
+    
+    //Health Check Monitoring
+     Route::get('/health', 'HealthController@index')->name('health.index');
+     Route::get('/health/fetch-data', 'HealthController@fetchData')->name('health.fetchData');
 
 });
