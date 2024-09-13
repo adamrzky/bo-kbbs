@@ -47,13 +47,13 @@ class ForgotPasswordController extends Controller
 
     public function sendEmail($data)
     {
-        $O2W_HOST = env('O2W_HOST', '192.168.26.26');
-        $O2W_PORT = env('O2W_PORT', '19033');
+        $O2W_HOST = env('O2W_HOST', '192.168.26.200');
+        $O2W_PORT = env('O2W_PORT', '13119');
         $O2W_TO = env('O2W_TO', '60');
         $O2W_USER = env('O2W_USER', 'viossbe');
         $O2W_PWD = env('O2W_PWD', '489324BE6CB6962A9ADD43D3A617081F');
-        $O2W_FROM = env('O2W_FROM', 'donotreply@lakupandai.bankbjb.co.id');
-        $O2W_SUB = env('O2W_SUB', 'BJB LAKUPANDAI');
+        $O2W_FROM = env('O2W_FROM', 'donotreply@masago.id');
+        $O2W_SUB = env('O2W_SUB', 'BSB');
 
         $TGL = date('YmdHis');
 
@@ -82,9 +82,12 @@ class ForgotPasswordController extends Controller
         // Logging untuk koneksi dan respons
         if ($timeoutStatus === 0) { 
             Log::info('Koneksi ke layanan email berhasil. Respons: ' . $Resp);
+            // var_dump($Resp);
+            // die;
 
             if (trim($Resp != '')) {
                 $Response = json_decode($Resp);
+
                 if ($Response->RC == '0000') {
                     $result = true;
                     Log::info('Email berhasil dikirim ke ' . $data['email']);
@@ -116,14 +119,25 @@ class ForgotPasswordController extends Controller
                 fwrite($fp, $message, strlen($message));
                 fwrite($fp, chr(-1));
                 stream_set_timeout($fp, $timeout);
+                $bDone = false;
 
-                while (!feof($fp) && !$bTimeout) {
-                    $info = stream_get_meta_data($fp);
+
+                while ((!feof($fp)) && ($bTimeout == 0) && (!$bDone)) {
+                    $info = @stream_get_meta_data($fp);
+
                     if ($info['timed_out']) {
                         $bTimeout = 1;
-                    } else {
-                        $s .= fread($fp, 1);
                     }
+                    if ($bTimeout == 0) {
+                        $c = fread($fp, 1);
+
+                        if ($c != chr(-1)) {
+                            $s .= $c;
+                        } else {
+                            $bDone = true;
+                        }
+                    }
+                    // end of !$bTimeout
                 }
 
                 fclose($fp);

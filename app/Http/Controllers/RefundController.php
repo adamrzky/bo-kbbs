@@ -54,7 +54,20 @@ class RefundController extends Controller
         $datas = [];
         switch (env('APP_ENV')) {
             case 'local':
-                $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env
+                $userId = Auth::id();
+                $user = Auth::user(); 
+
+
+                $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
+                    ->distinct()
+                    ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
+                    ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+                    ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+
+                    if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                        $query->where('users.id', $user->id);
+                    }
+                $datas = $query->get()->toArray();
                 break;
             case 'dev':
                 $datas = Http::get(env('API_URL_TM'))->json();  // Menggunakan variabel API_URL dari file .env

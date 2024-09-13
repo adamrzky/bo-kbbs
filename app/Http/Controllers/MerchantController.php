@@ -642,70 +642,70 @@ class MerchantController extends Controller
                 $sheet->setCellValue($cell, $value);
             }
 
-            $appEnv = getenv('APP_ENV');
-            $dateNow = date('Ymd');
-            $baseDir = '/home/share/test/KBBS_OUT/';
-            $baseDir2 = '/home/adam/test/KBBS_OUT/';
-            $folderName = $dateNow;
-            $storagePathProd = $baseDir . $folderName;
-            $storagePathDev = $baseDir2 . $folderName;
+            // $appEnv = getenv('APP_ENV');
+            // $dateNow = date('Ymd');
+            // $baseDir = '/home/share/test/KBBS_OUT/';
+            // $baseDir2 = '/home/share/test/KBBS_OUT/';
+            // $folderName = $dateNow;
+            // $storagePathProd = $baseDir . $folderName;
+            // $storagePathDev = $baseDir2 . $folderName;
 
-            switch ($appEnv) {
-                case 'prod':
-                    $storagePath = $storagePathProd;
-                    break;
-                case 'dev':
-                    $storagePath = $storagePathDev;
-                    break;
-                case 'local':
-                    $storagePath = null;
-                    break;
-                default:
-                    die('Invalid environment.');
-            }
+            // switch ($appEnv) {
+            //     case 'prod':
+            //         $storagePath = $storagePathProd;
+            //         break;
+            //     case 'dev':
+            //         $storagePath = $storagePathDev;
+            //         break;
+            //     case 'local':
+            //         $storagePath = null;
+            //         break;
+            //     default:
+            //         die('Invalid environment.');
+            // }
 
-            function getNextBatchNumber($storagePath, $dateNow)
-            {
-                $batchNumber = 0;
-                $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
+            // function getNextBatchNumbers($storagePath, $dateNow)
+            // {
+            //     $batchNumber = 0;
+            //     $firstFileExists = file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '.xlsx');
 
-                if ($firstFileExists) {
-                    $batchNumber = 2;
-                }
+            //     if ($firstFileExists) {
+            //         $batchNumber = 2;
+            //     }
 
-                while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
-                    $batchNumber++;
-                }
+            //     while (file_exists($storagePath . '/QRIS_NMR_93600521_' . $dateNow . '_batch' . $batchNumber . '.xlsx')) {
+            //         $batchNumber++;
+            //     }
 
-                return $batchNumber;
-            }
+            //     return $batchNumber;
+            // }
 
 
-            if ($appEnv === 'local') {
-                $batchNumber = getNextBatchNumber($storagePath, $dateNow);
-                $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment; filename="' . $filename . '"');
-                $writer = new Xlsx($spreadsheet);
-                $writer->save('php://output');
-                exit;
-            } else {
-                if (!file_exists($storagePath)) {
-                    if (!mkdir($storagePath, 0775, true)) {
-                        // Jika pembuatan direktori gagal, catat error dan kirim response error
-                        error_log("Failed to create directory at $storagePath");
-                        return response()->json(['error' => 'Failed to create directory'], 500);
-                    }
-                }
+            // if ($appEnv === 'local') {
+            //     $batchNumber = getNextBatchNumbers($storagePath, $dateNow);
+            //     $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            //     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            //     header('Content-Disposition: attachment; filename="' . $filename . '"');
+            //     $writer = new Xlsx($spreadsheet);
+            //     $writer->save('php://output');
+            //     exit;
+            // } else {
+            //     if (!file_exists($storagePath)) {
+            //         if (!mkdir($storagePath, 0775, true)) {
+            //             // Jika pembuatan direktori gagal, catat error dan kirim response error
+            //             error_log("Failed to create directory at $storagePath");
+            //             return response()->json(['error' => 'Failed to create directory'], 500);
+            //         }
+            //     }
 
-                // Simpan file ke disk untuk environment prod dan dev
-                $batchNumber = getNextBatchNumber($storagePath, $dateNow);
-                $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
-                $path = $storagePath . '/' . $filename;
-                $writer = new Xlsx($spreadsheet);
-                $writer->save($path);
-                Log::channel('merchant')->info('FILE EXCEL : ' . $path);
-            }
+            //     // Simpan file ke disk untuk environment prod dan dev
+            //     $batchNumber = getNextBatchNumbers($storagePath, $dateNow);
+            //     $filename = 'QRIS_NMR_93600521_' . $dateNow . ($batchNumber ? '_batch' . $batchNumber : '') . '.xlsx';
+            //     $path = $storagePath . '/' . $filename;
+            //     $writer = new Xlsx($spreadsheet);
+            //     $writer->save($path);
+            //     Log::channel('merchant')->info('FILE EXCEL : ' . $path);
+            // }
             return $spreadsheet;
         } else if ($request->editMerchant === true) {
 
@@ -1180,7 +1180,7 @@ class MerchantController extends Controller
         // 1. Konfigurasi penyimpanan file berdasarkan environment
         $appEnv = app()->environment();
         $dateNow = now()->format('Ymd');
-        $baseDir = config('app.excel_export_base_dir');
+        $baseDir = '/home/share/test/KBBS_OUT/';
         $folderName = $dateNow;
         $storagePath = $baseDir . $folderName;
 

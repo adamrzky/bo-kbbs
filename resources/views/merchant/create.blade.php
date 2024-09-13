@@ -131,7 +131,7 @@
                                 <div class="form-group col-6">
                                     <label>NMID</label>
                                     <input type="text" class="form-control" name="nmid" id="nmid"
-                                        value="{{ old('nmid') }}">
+                                        value="{{ old('nmid') }}" readonly>
                                 </div>
 
                                 <div class="form-group col-6">
