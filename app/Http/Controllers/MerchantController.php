@@ -57,15 +57,16 @@ class MerchantController extends Controller
     {
         $getUserId = Auth::id();
         $userId = $getUserId;
+        $user = Auth::user(); 
     
         $query = DB::table('QRIS_MERCHANT')
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->select('QRIS_MERCHANT.*'); 
     
-        if ($userId != 1 && $userId != 67) {
-            $query->where('users.id', $userId);
-        }
+            if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                $query->where('users.id', $user->id);
+            }
     
         $query->groupBy('QRIS_MERCHANT.ID'); 
     
@@ -306,7 +307,7 @@ class MerchantController extends Controller
 
         // Bangun path file gambar berdasarkan NMID
         $nmid = $merchant->NMID;
-        $imagePath = "/opt/vsi-scheduler-qris-acquirer/data_pten/{$nmid}_A01.png";
+        $imagePath = "data_pten/{$nmid}_A01.png";
 
         // dd($imagePath);
 

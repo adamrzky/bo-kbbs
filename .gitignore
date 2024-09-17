@@ -16,3 +16,4 @@ yarn-error.log
 /public/web.config
 /public/.htaccess
 /public/opt
+/public/data_pten/*.png
