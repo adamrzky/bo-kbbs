@@ -42,7 +42,7 @@
 
 <table class="table table-bordered">
     <tr>
-        <th>No</th>
+        <th>Merchant ID</th>
         <th>Merchant Name</th>
         <th>Merchant City</th>
         <th>Action</th>

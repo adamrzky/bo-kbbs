@@ -55,24 +55,22 @@ class MerchantController extends Controller
 
     public function index()
     {
-
         $getUserId = Auth::id();
         $userId = $getUserId;
-        // $user = Auth::user();
-
+    
         $query = DB::table('QRIS_MERCHANT')
-            ->distinct()
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-            ->select('QRIS_MERCHANT.*');
-
+            ->select('QRIS_MERCHANT.*'); 
+    
         if ($userId != 1 && $userId != 67) {
             $query->where('users.id', $userId);
         }
-
-
-        $merchants = $query->paginate(10); // Specify the number of items per page (e.g., 5)
-
+    
+        $query->groupBy('QRIS_MERCHANT.ID'); 
+    
+        $merchants = $query->paginate(10); 
+    
         return view('merchant.index', ['merchants' => $merchants]);
     }
 
