@@ -58,10 +58,12 @@
                 <div class="card-body">
                     <div class="row">
                         @foreach ($merchant->toArray() as $key => $value)
-                            <div class="form-group col-6">
-                                <label>{{ $key }}</label>
-                                <input type="text" class="form-control" value="{{ $value }}" readonly>
-                            </div>
+                            @if ($key != 'TYPE_QR' && $key != 'ID')
+                                <div class="form-group col-6">
+                                    <label>{{ $key }}</label>
+                                    <input type="text" class="form-control" value="{{ $value }}" readonly>
+                                </div>
+                            @endif
                         @endforeach
                     </div>
                 </div>
