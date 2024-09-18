@@ -62,6 +62,7 @@ class MerchantController extends Controller
         $query = DB::table('QRIS_MERCHANT')
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            ->whereIn('STATUS', [0, 1])
             ->select('QRIS_MERCHANT.*'); 
     
             if (!$user->hasRole(['Admin', 'Superadmin'])) {
