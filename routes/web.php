@@ -28,6 +28,9 @@ Route::get('/get-kota/{provinsi}', function($provinsi) {
     return response()->json($kota);
 });
 
+Route::get('/get-kecamatan', 'MerchantController@getKecamatan')->name('get.kecamatan');
+Route::get('/get-kodepos', 'MerchantController@getKodePos')->name('get.kodepos');
+
 Route::get('/transaction/detail/{id}', 'TransactionController@detail')->name('transactions.detail');
    
 Auth::routes();

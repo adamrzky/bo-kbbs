@@ -10,6 +10,7 @@ use App\Models\UserMerchant;
 use App\Models\QrisMerchantActivity;
 use App\Models\Cabang;
 use App\Models\Criteria;
+use App\Models\KabKota;
 use App\Models\Wilayah;
 use App\User;
 use Hash;
@@ -57,22 +58,22 @@ class MerchantController extends Controller
     {
         $getUserId = Auth::id();
         $userId = $getUserId;
-        $user = Auth::user(); 
-    
+        $user = Auth::user();
+
         $query = DB::table('QRIS_MERCHANT')
             ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
             ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
             ->whereIn('STATUS', [0, 1])
-            ->select('QRIS_MERCHANT.*'); 
-    
-            if (!$user->hasRole(['Admin', 'Superadmin'])) {
-                $query->where('users.id', $user->id);
-            }
-    
-        $query->groupBy('QRIS_MERCHANT.ID'); 
-    
-        $merchants = $query->paginate(10); 
-    
+            ->select('QRIS_MERCHANT.*');
+
+        if (!$user->hasRole(['Admin', 'Superadmin'])) {
+            $query->where('users.id', $user->id);
+        }
+
+        $query->groupBy('QRIS_MERCHANT.ID');
+
+        $merchants = $query->paginate(10);
+
         return view('merchant.index', ['merchants' => $merchants]);
     }
 
@@ -85,12 +86,28 @@ class MerchantController extends Controller
     {
         $mcc = Mcc::orderBy('DESC_MCC')->get()->toArray();
         $criteria = Criteria::orderBy('NO')->get()->toArray();
-        $provinsi = Wilayah::select('PROVINSI')->distinct()->get(); // Ambil daftar provinsi yang unik
+        // $provinsi = Wilayah::select('PROVINSI')->distinct()->get();
         $cabangs = Cabang::all();
 
-        $kota = Wilayah::where('PROVINSI', $provinsi)->get(['ID', 'DAERAH_TINGKAT']);
+        $kabKota = KabKota::select('KOTA_KABUPATEN')->distinct()->get();
 
-        return view('merchant.create', compact('mcc', 'criteria', 'provinsi', 'cabangs', 'kota'));
+        // $kota = Wilayah::where('PROVINSI', $provinsi)->get(['ID', 'DAERAH_TINGKAT']);
+
+        return view('merchant.create', compact('mcc', 'criteria', 'kabKota', 'cabangs'));
+    }
+
+    public function getKecamatan(Request $request)
+    {
+        $kotaKabupaten = $request->input('kota_kabupaten');
+        $kecamatan = KabKota::where('KOTA_KABUPATEN', $kotaKabupaten)->select('KECAMATAN')->distinct()->get();
+        return response()->json($kecamatan);
+    }
+
+    public function getKodePos(Request $request)
+    {
+        $kecamatan = $request->input('kecamatan');
+        $kodePos = KabKota::where('KECAMATAN', $kecamatan)->select('KODEPOS')->distinct()->get();
+        return response()->json($kodePos);
     }
 
 

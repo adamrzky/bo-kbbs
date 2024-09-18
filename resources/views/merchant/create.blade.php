@@ -180,30 +180,32 @@
                                         @endforeach
                                     </select>
                                 </div>
+
                                 <div class="form-group col-6">
-                                    <label>Provinsi</label>
-                                    <select class="form-control" name="prov" id="prov" required>
-                                        <option value="">-</option>
-                                        @foreach ($provinsi as $item)
-                                            <option value="{{ $item->PROVINSI }}">{{ $item->PROVINSI }}</option>
+                                    <label>Kota/Kabupaten</label>
+                                    <select class="form-control select2" name="kota_kabupaten" id="kota_kabupaten"
+                                        required>
+                                        <option value="">- Pilih Kota/Kabupaten -</option>
+                                        @foreach ($kabKota as $item)
+                                            <option value="{{ $item->KOTA_KABUPATEN }}">{{ $item->KOTA_KABUPATEN }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <div class="form-group col-6">
-                                    <label>Kota</label>
-                                    <select class="form-control" name="city" id="city" required>
-                                        <option value="">-</option>
-                                        @foreach ($kota as $item)
-                                            <option value="{{ $item->DAERAH_TINGKAT }}">{{ $item->DAERAH_TINGKAT }}
-                                            </option>
-                                        @endforeach
+                                    <label>Kecamatan</label>
+                                    <select class="form-control select2" name="kecamatan" id="kecamatan" required>
+                                        <option value="">- Pilih Kecamatan -</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-6">
-                                    <label>Kodepos</label>
-                                    <input type="number" class="form-control" name="postalcode" id="postalcode"
-                                        value="{{ old('postalcode') }}">
+
+                                <div class="form-group   
+                                 col-6">
+                                    <label>Kode Pos</label>
+                                    <select class="form-control select2" name="kodepos" id="kodepos" required>
+                                        <option value="">- Pilih Kode Pos -</option>
+                                    </select>
                                 </div>
                                 <div class="form-group col-6">
                                     <label>Alamat</label>
@@ -228,31 +230,101 @@
 @endsection
 
 @section('js')
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const provSelect = document.getElementById('prov');
-            const citySelect = document.getElementById('city');
+        $(document).ready(function() {
+            // ... (kode lainnya)
 
-            provSelect.addEventListener('change', function() {
-                const provinsi = this.value;
-
-                if (provinsi) {
-                    fetch(`{{ url('/get-kota') }}/${provinsi}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            citySelect.innerHTML = '<option value="">-</option>'; // Reset kota
-                            data.forEach(item => {
-                                const option = document.createElement('option');
-                                option.value = item.DAERAH_TINGKAT;
-                                option.text = item.DAERAH_TINGKAT;
-                                citySelect.appendChild(option);
+            // Event listener untuk dropdown kota/kabupaten
+            $('#kota_kabupaten').on('change', function() {
+                var kotaKabupaten = $(this).val();
+                if (kotaKabupaten) {
+                    $.ajax({
+                        url: '{{ route('get.kecamatan') }}',
+                        type: 'GET',
+                        data: {
+                            kota_kabupaten: kotaKabupaten
+                        },
+                        success: function(data) {
+                            $('#kecamatan').empty();
+                            $('#kecamatan').append(
+                                '<option value="">- Pilih Kecamatan -</option>');
+                            $.each(data, function(key, value) {
+                                $('#kecamatan').append('<option value="' + value
+                                    .KECAMATAN + '">' + value.KECAMATAN +
+                                    '</option>');
                             });
-                        });
+
+                            $('#kodepos').empty();
+                            $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
+
+                        }
+                    });
                 } else {
-                    citySelect.innerHTML = '<option value="">-</option>';
+                    $('#kecamatan').empty();
+                    $('#kecamatan').append('<option value="">- Pilih Kecamatan -</option>');
+                    $('#kodepos').empty();
+                    $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
+                }
+            });
+
+            // Event listener untuk dropdown kecamatan
+            $('#kecamatan').on('change', function() {
+                var kecamatan = $(this).val();
+                if (kecamatan) {
+                    $.ajax({
+                        url: '{{ route('get.kodepos') }}', // Pastikan route ini benar
+                        type: 'GET',
+                        data: {
+                            kecamatan: kecamatan
+                        },
+                        success: function(data) {
+                            $('#kodepos').empty();
+
+                            $('#kodepos').append(
+                                '<option value="">- Pilih Kode Pos -</option>');
+                            $.each(data, function(key, value) {
+                                $('#kodepos').append('<option value="' + value.KODEPOS +
+                                    '">' + value.KODEPOS + '</option>');
+                            });
+
+                        }
+                    });
+                } else {
+                    $('#kodepos').empty();
+                    $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
                 }
             });
         });
+
+    
+    </script>
+
+    <script>
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const provSelect = document.getElementById('prov');
+        //     const citySelect = document.getElementById('city');
+
+        //     provSelect.addEventListener('change', function() {
+        //         const provinsi = this.value;
+
+        //         if (provinsi) {
+        //             fetch(`{{ url('/get-kota') }}/${provinsi}`)
+        //                 .then(response => response.json())
+        //                 .then(data => {
+        //                     citySelect.innerHTML = '<option value="">-</option>'; // Reset kota
+        //                     data.forEach(item => {
+        //                         const option = document.createElement('option');
+        //                         option.value = item.DAERAH_TINGKAT;
+        //                         option.text = item.DAERAH_TINGKAT;
+        //                         citySelect.appendChild(option);
+        //                     });
+        //                 });
+        //         } else {
+        //             citySelect.innerHTML = '<option value="">-</option>';
+        //         }
+        //     });
+        // });
 
         function toggleFields() {
             var type = $('#merchantTipe').val();
