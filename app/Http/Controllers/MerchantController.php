@@ -61,12 +61,13 @@ class MerchantController extends Controller
         $user = Auth::user();
 
         $query = DB::table('QRIS_MERCHANT')
-            ->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID')
-            ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
+            
             ->whereIn('STATUS', [0, 1])
             ->select('QRIS_MERCHANT.*');
 
         if (!$user->hasRole(['Admin', 'Superadmin'])) {
+            $query->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID');
+            $query->join('users', 'user_has_merchant.USER_ID', '=', 'users.id');
             $query->where('users.id', $user->id);
         }
 
@@ -98,7 +99,7 @@ class MerchantController extends Controller
 
     public function getKecamatan(Request $request)
     {
-        $kotaKabupaten = $request->input('kota_kabupaten');
+        $kotaKabupaten = $request->input('city');
         $kecamatan = KabKota::where('KOTA_KABUPATEN', $kotaKabupaten)->select('KECAMATAN')->distinct()->get();
         return response()->json($kecamatan);
     }
@@ -141,7 +142,7 @@ class MerchantController extends Controller
             'merchant' => 'required',
             'mcc' => 'required',
             'criteria' => 'required',
-            'prov' => 'required',
+            'prov' => 'nullable',
             'city' => 'required',
             'address' => 'required',
             'postalcode' => 'required',
@@ -201,7 +202,7 @@ class MerchantController extends Controller
                 'MERCHANT_CURRENCY_CODE' => '360',
                 'MERCHANT_TYPE' => $validatedData['mcc'],
                 'MERCHANT_EXP' => '900',
-                'MERCHANT_CODE' => genID(7, true),
+                'MERCHANT_CODE' => genID(9, true),
                 'MERCHANT_ADDRESS' => $validatedData['address'],
                 'STATUS' => '0',
                 'NMID' => $request->nmid,

@@ -62,8 +62,8 @@
 
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-default">
-                    <form action="{{ route('merchant.store') }}" method="POST">
+
+                    <div class="card card-default">
                         @csrf
                         <div class="card-body">
                             <div class="row">
@@ -156,8 +156,8 @@
                                 <div class="form-group col-6">
                                     <label>Tipe QR</label>
                                     <select class="form-control" name="qrType" id="qrType" required>
-                                        <option value="D">Dinamis</option>
                                         <option value="S">Statis</option>
+                                        <option value="D">Dinamis</option>
                                         <option value="B">Statis & Dinamis</option>
                                     </select>
                                 </div>
@@ -181,10 +181,22 @@
                                     </select>
                                 </div>
 
+                              
+                                <div hidden class="form-group  col-6">
+                                    <label>Fee Merchant</label>
+                                    <input type="number" class="form-control" name="fee" id="fee" hidden
+                                        value="0" min="0" max="100" value="{{ old('fee') }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-default">
+                        <div class="card-body">
+                            <div class="row">
+
                                 <div class="form-group col-6">
                                     <label>Kota/Kabupaten</label>
-                                    <select class="form-control select2" name="kota_kabupaten" id="kota_kabupaten"
-                                        required>
+                                    <select class="form-control select2" name="city" id="city" required>
                                         <option value="">- Pilih Kota/Kabupaten -</option>
                                         @foreach ($kabKota as $item)
                                             <option value="{{ $item->KOTA_KABUPATEN }}">{{ $item->KOTA_KABUPATEN }}
@@ -203,7 +215,7 @@
                                 <div class="form-group   
                                  col-6">
                                     <label>Kode Pos</label>
-                                    <select class="form-control select2" name="kodepos" id="kodepos" required>
+                                    <select class="form-control select2" name="postalcode" id="postalcode" required>
                                         <option value="">- Pilih Kode Pos -</option>
                                     </select>
                                 </div>
@@ -211,19 +223,14 @@
                                     <label>Alamat</label>
                                     <textarea class="form-control" name="address" id="address" rows="3">{{ old('address') }}</textarea>
                                 </div>
-                                <div hidden class="form-group  col-6">
-                                    <label>Fee Merchant</label>
-                                    <input type="number" class="form-control" name="fee" id="fee" hidden
-                                        value="0" min="0" max="100" value="{{ old('fee') }}">
-                                </div>
                             </div>
                         </div>
-                        <div class="card-footer">
-                            <a class="btn btn-info" href="{{ route('merchant.index') }}">Back</a>
-                            <button type="submit" class="btn btn-success">Submit</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-info" href="{{ route('merchant.index') }}">Back</a>
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                
             </div>
         </div>
     </form>
@@ -236,14 +243,14 @@
             // ... (kode lainnya)
 
             // Event listener untuk dropdown kota/kabupaten
-            $('#kota_kabupaten').on('change', function() {
+            $('#city').on('change', function() {
                 var kotaKabupaten = $(this).val();
                 if (kotaKabupaten) {
                     $.ajax({
                         url: '{{ route('get.kecamatan') }}',
                         type: 'GET',
                         data: {
-                            kota_kabupaten: kotaKabupaten
+                            city: kotaKabupaten
                         },
                         success: function(data) {
                             $('#kecamatan').empty();
@@ -255,16 +262,17 @@
                                     '</option>');
                             });
 
-                            $('#kodepos').empty();
-                            $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
+                            $('#postalcode').empty();
+                            $('#postalcode').append(
+                                '<option value="">- Pilih Kode Pos -</option>');
 
                         }
                     });
                 } else {
                     $('#kecamatan').empty();
                     $('#kecamatan').append('<option value="">- Pilih Kecamatan -</option>');
-                    $('#kodepos').empty();
-                    $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
+                    $('#postalcode').empty();
+                    $('#postalcode').append('<option value="">- Pilih Kode Pos -</option>');
                 }
             });
 
@@ -279,28 +287,27 @@
                             kecamatan: kecamatan
                         },
                         success: function(data) {
-                            $('#kodepos').empty();
+                            $('#postalcode').empty();
 
-                            $('#kodepos').append(
+                            $('#postalcode').append(
                                 '<option value="">- Pilih Kode Pos -</option>');
                             $.each(data, function(key, value) {
-                                $('#kodepos').append('<option value="' + value.KODEPOS +
+                                $('#postalcode').append('<option value="' + value
+                                    .KODEPOS +
                                     '">' + value.KODEPOS + '</option>');
                             });
 
                         }
                     });
                 } else {
-                    $('#kodepos').empty();
-                    $('#kodepos').append('<option value="">- Pilih Kode Pos -</option>');
+                    $('#postalcode').empty();
+                    $('#postalcode').append('<option value="">- Pilih Kode Pos -</option>');
                 }
             });
         });
 
-    
-    </script>
 
-    <script>
+
         // document.addEventListener('DOMContentLoaded', function() {
         //     const provSelect = document.getElementById('prov');
         //     const citySelect = document.getElementById('city');
@@ -339,7 +346,7 @@
 
         $(document).ready(function() {
             toggleFields(); // Call on document ready to set the correct field
-            prov(); // Initialize your existing province-city logic
+            // prov(); // Initialize your existing province-city logic
         });
 
         function cekNorek() {

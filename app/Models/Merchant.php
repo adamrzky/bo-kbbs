@@ -31,6 +31,7 @@ class Merchant extends Model
         'MERCHANT_CURRENCY_CODE',
         'MERCHANT_TYPE',
         'MERCHANT_EXP',
+        'MERCHANT_CODE',
         'MERCHANT_ADDRESS',
         'STATUS',
         'NMID',
