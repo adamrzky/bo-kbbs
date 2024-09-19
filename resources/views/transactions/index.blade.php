@@ -20,17 +20,17 @@
     </section>
 
     <!-- Filter and Export Buttons -->
-    {{-- <div class="row mb-4">
+    <div class="row mb-4">
         <div class="col-md-4">
             <input type="text" id="start-date" class="form-control" placeholder="Start Date">
         </div>
         <div class="col-md-4">
             <input type="text" id="end-date" class="form-control" placeholder="End Date">
         </div>
-        <div class="col-md-4 text-right">
+        {{-- <div class="col-md-4 text-right">
             <button id="exportButton" class="btn btn-success">Export Data</button>
-        </div>
-    </div> --}}
+        </div> --}}
+    </div>
 
     <!-- modal detail -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
