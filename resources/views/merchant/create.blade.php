@@ -3,6 +3,8 @@
 @section('title', 'Dashboard')
 
 @section('content')
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -63,184 +65,197 @@
         <div class="row">
             <div class="col-md-12">
 
-                    <div class="card card-default">
-                        @csrf
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="form-group col-6">
-                                    <label>Nomor Rekening</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" name="norek" id="norek"
-                                            value="{{ old('norek') }}" required>
-                                        <div class="input-group-append">
-                                            <span id="norekStatus" class="input-group-text"></span>
-                                            <button type="button" onclick="cekNorek()" class="btn btn-info">Cek No
-                                                Rek</button>
-                                        </div>
+                <div class="card card-default">
+                    @csrf
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label>Nomor Rekening</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="norek" id="norek"
+                                        value="{{ old('norek') }}" required>
+                                    <div class="input-group-append">
+                                        <span id="norekStatus" class="input-group-text"></span>
+                                        <button type="button" onclick="cekNorek()" class="btn btn-info">Cek No
+                                            Rek</button>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Cabang</label>
-                                    <select class="form-control" name="cabang" id="cabang" required>
-                                        <!-- Opsi default -->
-                                        <option value="">- Pilih Cabang -</option>
+                            <div class="form-group col-6">
+                                <label>Cabang</label>
+                                <select class="form-control" name="cabang" id="cabang" required>
+                                    <!-- Opsi default -->
+                                    <option value="">- Pilih Cabang -</option>
 
-                                        @foreach ($cabangs as $cabang)
-                                            <option value="{{ $cabang->CPC_MC_KODE_CABANG }}"
-                                                data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
-                                                {{ $cabang->CPC_MC_NAMA }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                    @foreach ($cabangs as $cabang)
+                                        <option value="{{ $cabang->CPC_MC_KODE_CABANG }}"
+                                            data-lokasi="{{ $cabang->CPC_MC_KODE_LOKASI }}">
+                                            {{ $cabang->CPC_MC_NAMA }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
 
-                                <div class="form-group col-6">
-                                    <label>MID</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="mid" id="mid"
-                                            value="{{ old('mid') }}" readonly required>
+                            <div class="form-group col-6">
+                                <label>MID</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="mid" id="mid"
+                                        value="{{ old('mid') }}" readonly required>
 
-                                        <div class="input-group-append">
-                                            <span id="midStatus" class="input-group-text"></span>
-                                            <button type="button" onclick="generateMid()" class="btn btn-info">Generate
-                                                MID</button>
-                                        </div>
+                                    <div class="input-group-append">
+                                        <span id="midStatus" class="input-group-text"></span>
+                                        <button type="button" onclick="generateMid()" class="btn btn-info">Generate
+                                            MID</button>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Nama Merchant</label>
-                                    <input type="text" class="form-control" name="merchant" id="merchant"
-                                        value="{{ old('merchant') }}" required>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Nama Merchant</label>
+                                <input type="text" class="form-control" name="merchant" id="merchant"
+                                    value="{{ old('merchant') }}" required>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>MPAN</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="mpan" id="mpan"
-                                            value="{{ old('mpan') }}" readonly>
-                                        <div class="input-group-append">
-                                            <button type="button" onclick="generateMpan()" class="btn btn-info">Generate
-                                                MPAN</button>
-                                        </div>
+                            <div class="form-group col-6">
+                                <label>MPAN</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="mpan" id="mpan"
+                                        value="{{ old('mpan') }}" readonly>
+                                    <div class="input-group-append">
+                                        <button type="button" onclick="generateMpan()" class="btn btn-info">Generate
+                                            MPAN</button>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>NMID</label>
-                                    <input type="text" class="form-control" name="nmid" id="nmid"
-                                        value="{{ old('nmid') }}" readonly>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>NMID</label>
+                                <input type="text" class="form-control" name="nmid" id="nmid"
+                                    value="{{ old('nmid') }}" readonly>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Tipe Merchant</label>
-                                    <select class="form-control" name="merchantTipe" id="merchantTipe"
-                                        onchange="toggleFields()" required>
-                                        <option value="1">Individu</option>
-                                        <option value="2">Badan Usaha</option>
-                                    </select>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Tipe Merchant</label>
+                                <select class="form-control" name="merchantTipe" id="merchantTipe"
+                                    onchange="toggleFields()" required>
+                                    <option value="1">Individu</option>
+                                    <option value="2">Badan Usaha</option>
+                                </select>
+                            </div>
 
-                                <div class="form-group col-6" id="ktpField" style="display:none;">
-                                    <label>KTP</label>
-                                    <input type="text" class="form-control" name="ktp" id="ktp">
-                                </div>
+                            <div class="form-group col-6" id="ktpField" style="display:none;">
+                                <label>KTP</label>
+                                <input type="text" class="form-control" name="ktp" id="ktp">
+                            </div>
 
-                                <div class="form-group col-6" id="npwpField" style="display:none;">
-                                    <label>NPWP</label>
-                                    <input type="text" class="form-control" name="npwp" id="npwp">
-                                </div>
+                            <div class="form-group col-6" id="npwpField" style="display:none;">
+                                <label>NPWP</label>
+                                <input type="text" class="form-control" name="npwp" id="npwp">
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Tipe QR</label>
-                                    <select class="form-control" name="qrType" id="qrType" required>
-                                        <option value="S">Statis</option>
-                                        <option value="D">Dinamis</option>
-                                        <option value="B">Statis & Dinamis</option>
-                                    </select>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Tipe QR</label>
+                                <select class="form-control" name="qrType" id="qrType" required>
+                                    <option value="S">Statis</option>
+                                    <option value="D">Dinamis</option>
+                                    <option value="B">Statis & Dinamis</option>
+                                </select>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Kategori Merchant (MCC)</label>
-                                    <select class="form-control" name="mcc" id="mcc" required>
-                                        @foreach ($mcc as $dropdown)
-                                            <option value="{{ $dropdown['CODE_MCC'] }}">{{ $dropdown['CODE_MCC'] }} -
-                                                {{ $dropdown['DESC_MCC'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-group col-6">
-                                    <label>Kriteria Merchant (Criteria)</label>
-                                    <select class="form-control" name="criteria" id="criteria" required>
-                                        @foreach ($criteria as $dropdown)
-                                            <option value="{{ $dropdown['ID'] }}">{{ $dropdown['ID'] }} -
-                                                {{ $dropdown['DESC'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Kategori Merchant (MCC)</label>
+                                <select class="form-control" name="mcc" id="mcc" required>
+                                    @foreach ($mcc as $dropdown)
+                                        <option value="{{ $dropdown['CODE_MCC'] }}">{{ $dropdown['CODE_MCC'] }} -
+                                            {{ $dropdown['DESC_MCC'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Kriteria Merchant (Criteria)</label>
+                                <select class="form-control" name="criteria" id="criteria" required>
+                                    @foreach ($criteria as $dropdown)
+                                        <option value="{{ $dropdown['ID'] }}">{{ $dropdown['ID'] }} -
+                                            {{ $dropdown['DESC'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                              
-                                <div hidden class="form-group  col-6">
-                                    <label>Fee Merchant</label>
-                                    <input type="number" class="form-control" name="fee" id="fee" hidden
-                                        value="0" min="0" max="100" value="{{ old('fee') }}">
-                                </div>
+
+                            <div hidden class="form-group  col-6">
+                                <label>Fee Merchant</label>
+                                <input type="number" class="form-control" name="fee" id="fee" hidden
+                                    value="0" min="0" max="100" value="{{ old('fee') }}">
                             </div>
                         </div>
                     </div>
-                    <div class="card card-default">
-                        <div class="card-body">
-                            <div class="row">
+                </div>
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label>Kota/Kabupaten</label>
+                                <select class="form-control select2" name="city" id="city" required>
+                                    <option value="">- Pilih Kota/Kabupaten -</option>
+                                    @foreach ($kabKota as $item)
+                                        <option value="{{ $item->KOTA_KABUPATEN }}">{{ $item->KOTA_KABUPATEN }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Kota/Kabupaten</label>
-                                    <select class="form-control select2" name="city" id="city" required>
-                                        <option value="">- Pilih Kota/Kabupaten -</option>
-                                        @foreach ($kabKota as $item)
-                                            <option value="{{ $item->KOTA_KABUPATEN }}">{{ $item->KOTA_KABUPATEN }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Kecamatan</label>
+                                <select class="form-control select2" name="kecamatan" id="kecamatan" required>
+                                    <option value="">- Pilih Kecamatan -</option>
+                                </select>
+                            </div>
 
-                                <div class="form-group col-6">
-                                    <label>Kecamatan</label>
-                                    <select class="form-control select2" name="kecamatan" id="kecamatan" required>
-                                        <option value="">- Pilih Kecamatan -</option>
-                                    </select>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Kode Pos</label>
+                                <select class="form-control select2" name="postalcode" id="postalcode" required>
+                                    <option value="">- Pilih Kode Pos -</option>
+                                </select>
+                            </div>
 
-                                <div class="form-group   
-                                 col-6">
-                                    <label>Kode Pos</label>
-                                    <select class="form-control select2" name="postalcode" id="postalcode" required>
-                                        <option value="">- Pilih Kode Pos -</option>
-                                    </select>
-                                </div>
-                                <div class="form-group col-6">
-                                    <label>Alamat</label>
-                                    <textarea class="form-control" name="address" id="address" rows="3">{{ old('address') }}</textarea>
-                                </div>
+                            <div class="form-group col-6">
+                                <label>Alamat</label>
+                                <textarea class="form-control" name="address" id="address" rows="3">{{ old('address') }}</textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <a class="btn btn-info" href="{{ route('merchant.index') }}">Back</a>
-                        <button type="submit" class="btn btn-success">Submit</button>
-                    </div>
-                
+                </div>
+
+                <div class="card-footer">
+                    <a class="btn btn-info" href="{{ route('merchant.index') }}">Back</a>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+
             </div>
         </div>
     </form>
 @endsection
 
+<style>
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    padding-left: 0 !important;  
+    height: auto !important;     
+    margin-top: -7px !important;  
+}
+    
+</style>
+
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // ... (kode lainnya)
+            // Inisialisasi Select2 pada setiap dropdown
+            $('#city, #kecamatan, #postalcode').select2({
+                placeholder: "Pilih",
+                allowClear: true
+            });
 
             // Event listener untuk dropdown kota/kabupaten
             $('#city').on('change', function() {
@@ -253,26 +268,24 @@
                             city: kotaKabupaten
                         },
                         success: function(data) {
-                            $('#kecamatan').empty();
-                            $('#kecamatan').append(
+                            $('#kecamatan').empty().append(
                                 '<option value="">- Pilih Kecamatan -</option>');
                             $.each(data, function(key, value) {
                                 $('#kecamatan').append('<option value="' + value
                                     .KECAMATAN + '">' + value.KECAMATAN +
                                     '</option>');
                             });
-
-                            $('#postalcode').empty();
-                            $('#postalcode').append(
+                            // Refresh Select2 setelah mengubah konten dropdown
+                            $('#kecamatan').trigger('change');
+                            $('#postalcode').empty().append(
                                 '<option value="">- Pilih Kode Pos -</option>');
-
                         }
                     });
                 } else {
-                    $('#kecamatan').empty();
-                    $('#kecamatan').append('<option value="">- Pilih Kecamatan -</option>');
-                    $('#postalcode').empty();
-                    $('#postalcode').append('<option value="">- Pilih Kode Pos -</option>');
+                    $('#kecamatan').empty().append('<option value="">- Pilih Kecamatan -</option>').trigger(
+                        'change');
+                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>').trigger(
+                        'change');
                 }
             });
 
@@ -281,30 +294,29 @@
                 var kecamatan = $(this).val();
                 if (kecamatan) {
                     $.ajax({
-                        url: '{{ route('get.kodepos') }}', // Pastikan route ini benar
+                        url: '{{ route('get.kodepos') }}',
                         type: 'GET',
                         data: {
                             kecamatan: kecamatan
                         },
                         success: function(data) {
-                            $('#postalcode').empty();
-
-                            $('#postalcode').append(
+                            $('#postalcode').empty().append(
                                 '<option value="">- Pilih Kode Pos -</option>');
                             $.each(data, function(key, value) {
                                 $('#postalcode').append('<option value="' + value
-                                    .KODEPOS +
-                                    '">' + value.KODEPOS + '</option>');
+                                    .KODEPOS + '">' + value.KODEPOS + '</option>');
                             });
-
+                            // Refresh Select2 setelah mengubah konten dropdown
+                            $('#postalcode').trigger('change');
                         }
                     });
                 } else {
-                    $('#postalcode').empty();
-                    $('#postalcode').append('<option value="">- Pilih Kode Pos -</option>');
+                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>').trigger(
+                        'change');
                 }
             });
         });
+
 
 
 
