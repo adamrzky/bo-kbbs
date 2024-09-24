@@ -119,16 +119,52 @@
                             </div>
 
                             <div class="form-group col-6">
-                                <label>Kota</label>
-                                <input type="text" class="form-control" name="MERCHANT_CITY"
-                                    value="{{ $merchant->MERCHANT_CITY }}">
+                                <label>Kota/Kabupaten</label>
+                                <select class="form-control select2" name="city" id="city" required>
+                                    <option value="">- Pilih Kota/Kabupaten -</option>
+                                    @foreach ($kabKota as $item)
+                                        <option value="{{ $item->KOTA_KABUPATEN }}"
+                                            {{ $merchant->MERCHANT_CITY == $item->KOTA_KABUPATEN ? 'selected' : '' }}>
+                                            {{ $item->KOTA_KABUPATEN }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
+
+                            {{-- <div class="form-group col-6">
+                                <label>Kecamatan</label>
+                                <select class="form-control select2" name="kecamatan" id="kecamatan" required>
+                                    <option value="">- Pilih Kecamatan -</option>
+                                    @foreach ($kecamatan as $item)
+                                        <option value="{{ $item->KECAMATAN }}" 
+                                            {{ $merchant->KECAMATAN == $item->KECAMATAN ? 'selected' : '' }}>
+                                            {{ $item->KECAMATAN }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="form-group col-6">
+                                <label>Kode Pos</label>
+                                <select class="form-control select2" name="postalcode" id="postalcode" required>
+                                    <option value="">- Pilih Kode Pos -</option>
+                                    @foreach ($kodePos as $item)
+                                        <option value="{{ $item->KODEPOS }}" 
+                                            {{ $merchant->POSTAL_CODE == $item->KODEPOS ? 'selected' : '' }}>
+                                            {{ $item->KODEPOS }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div> --}}
+
 
                             <div class="form-group col-6">
                                 <label>Kodepos</label>
                                 <input type="text" class="form-control" name="POSTAL_CODE"
                                     value="{{ $merchant->POSTAL_CODE }}">
                             </div>
+
+
 
                             <div class="form-group col-6">
                                 <label>Kriteria Merchant</label>
@@ -171,7 +207,6 @@
                                         Usaha</option>
                                 </select>
                             </div>
-
 
                             <div class="form-group col-6" id="ktpField" style="display:none;">
                                 <label>KTP</label>
@@ -221,22 +256,86 @@
         </div>
     </form>
     <script>
+        $(document).ready(function() {
+            // Event listener untuk dropdown kota/kabupaten
+            $('#city').on('change', function() {
+                var kotaKabupaten = $(this).val();
+                if (kotaKabupaten) {
+                    $.ajax({
+                        url: '{{ route('get.kecamatan') }}',
+                        type: 'GET',
+                        data: {
+                            city: kotaKabupaten
+                        },
+                        success: function(data) {
+                            $('#kecamatan').empty().append(
+                                '<option value="">- Pilih Kecamatan -</option>');
+                            $.each(data, function(key, value) {
+                                $('#kecamatan').append('<option value="' + value
+                                    .KECAMATAN + '">' + value.KECAMATAN +
+                                    '</option>');
+                            });
+
+                            $('#postalcode').empty().append(
+                                '<option value="">- Pilih Kode Pos -</option>');
+                        }
+                    });
+                } else {
+                    $('#kecamatan').empty().append('<option value="">- Pilih Kecamatan -</option>');
+                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>');
+                }
+            });
+
+            // Event listener untuk dropdown kecamatan
+            $('#kecamatan').on('change', function() {
+                var kecamatan = $(this).val();
+                if (kecamatan) {
+                    $.ajax({
+                        url: '{{ route('get.kodepos') }}',
+                        type: 'GET',
+                        data: {
+                            kecamatan: kecamatan
+                        },
+                        success: function(data) {
+                            $('#postalcode').empty().append(
+                                '<option value="">- Pilih Kode Pos -</option>');
+                            $.each(data, function(key, value) {
+                                $('#postalcode').append('<option value="' + value
+                                    .KODEPOS + '">' + value.KODEPOS + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>');
+                }
+            });
+        });
+    </script>
+    <script>
         function toggleFields() {
             var selection = document.getElementById('merchantTipe').value;
             var ktpField = document.getElementById('ktpField');
             var npwpField = document.getElementById('npwpField');
+            var ktpInput = $('input[name="KTP"]'); // Gunakan jQuery untuk menangani input
+            var npwpInput = $('input[name="NPWP"]'); // Gunakan jQuery untuk menangani input
 
             if (selection === '1') {
+                // Tipe Merchant: Individu
                 ktpField.style.display = 'block';
                 npwpField.style.display = 'none';
+                npwpInput.val(''); // Kosongkan NPWP
             } else if (selection === '2') {
+                // Tipe Merchant: Badan Usaha
                 ktpField.style.display = 'none';
                 npwpField.style.display = 'block';
+                ktpInput.val(''); // Kosongkan KTP
             }
         }
 
-        // Call toggleFields on page load to set the correct state based on the current value
-        document.addEventListener('DOMContentLoaded', toggleFields);
+        // Jalankan saat halaman pertama kali dimuat untuk menyesuaikan field sesuai dengan nilai awal
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleFields();
+        });
     </script>
 
 @endsection

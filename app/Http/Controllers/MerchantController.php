@@ -61,7 +61,7 @@ class MerchantController extends Controller
         $user = Auth::user();
 
         $query = DB::table('QRIS_MERCHANT')
-            
+
             ->whereIn('STATUS', [0, 1])
             ->select('QRIS_MERCHANT.*');
 
@@ -339,17 +339,27 @@ class MerchantController extends Controller
 
     public function edit(Merchant $merchant, $id)
     {
-
         $id = Crypt::decrypt($id);
         $merchant = Merchant::where('id', $id)->first();
-        $mcc = Mcc::orderBy('DESC_MCC')
-            ->get()
-            ->toArray();
+        $mcc = Mcc::orderBy('DESC_MCC')->get()->toArray();
         $criteria = getCriteria();
         $merchant_detail = MerchantDetails::where('MERCHANT_ID', $id)->first();
         $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
-        return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic'));
+
+        // Ambil semua Kota/Kabupaten untuk dropdown Kota/Kabupaten
+        $kabKota = KabKota::select('KOTA_KABUPATEN')->distinct()->get();
+
+        // Ambil Kecamatan berdasarkan Kota/Kabupaten yang sudah dipilih merchant
+        $kecamatan = KabKota::where('KOTA_KABUPATEN', $merchant->MERCHANT_CITY)
+            ->select('KECAMATAN')->distinct()->get();
+
+        // Ambil Kode Pos berdasarkan Kecamatan yang sudah dipilih merchant
+        $kodePos = KabKota::where('KECAMATAN', $merchant->KECAMATAN)
+            ->select('KODEPOS')->distinct()->get();
+
+        return view('merchant.edit', compact('merchant', 'merchant_detail', 'mcc', 'criteria', 'merchant_domestic', 'kabKota', 'kecamatan', 'kodePos'));
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -428,7 +438,7 @@ class MerchantController extends Controller
                 'MERCHANT_CITY' => $request->MERCHANT_CITY,
                 'POSTAL_CODE' => $request->POSTAL_CODE,
                 // 'MERCHANT_CURRENCY_CODE' => $request->MERCHANT_CURRENCY_CODE,
-                // 'MERCHANT_TYPE' => $request->MERCHANT_TYPE,
+                'MERCHANT_TYPE' => $request->MCC,
                 // 'MERCHANT_EXP' => $request->MERCHANT_EXP,
                 'MERCHANT_ADDRESS' => $request->MERCHANT_ADDRESS,
                 // 'STATUS' => $request->STATUS,
