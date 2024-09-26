@@ -1599,10 +1599,55 @@ class MerchantController extends Controller
 
     public function destroy(Request $request)
     {
-
-        $request['deleteMerchant'] = true;
-        Log::channel('merchant')->info('REQ DELETE MERCHANT ==============================================================================');
-        $spreadsheet = $this->generateMerchantExcel($request);
-        $this->saveExcelFile($spreadsheet, $request, 'delete');
+        try {
+            $request['deleteMerchant'] = true;
+            Log::channel('merchant')->info('REQ DELETE MERCHANT ==============================================================================');
+    
+            if ($request->NMID == null) {
+    
+                // Log activity for REQUEST
+                $raw_request = json_encode($request->toArray());
+                $activity_type = 'REQUEST';
+                $comment = 'DELETE REQUEST';
+                $action = 'DELETE';
+                $this->logMerchantActivityNew($raw_request, null, $comment, $action, $activity_type);
+                Log::channel('merchant')->info('DELETE MERCHANT ==============================================================================');
+    
+                $merchant = Merchant::find($request->ID_MERCHANT);
+                if (!$merchant) {
+                    return back()->withErrors(['msg' => 'Merchant not found']);
+                }
+    
+                $merchant->update([
+                    'STATUS' => 2
+                ]);
+    
+                // Log response
+                $raw_response = json_encode([
+                    'merchant' => $merchant,
+                ]);
+    
+                $activity_type = 'RESPONSE';
+                $comment = 'DELETE RESPONSE';
+                $action = 'DELETE';
+                $this->logMerchantActivityNew(null, $raw_response, $comment, $action, $activity_type);
+    
+            } else {
+                $spreadsheet = $this->generateMerchantExcel($request);
+                $this->saveExcelFile($spreadsheet, $request, 'delete');
+            }
+    
+            return redirect()
+                ->route('merchant.index')
+                ->with('success', 'Merchant deleted successfully.');
+    
+        } catch (\Exception $e) {
+            // Log error
+            Log::channel('merchant')->error('Error deleting merchant: ' . $e->getMessage());
+    
+            // Redirect back with error message
+            return back()->withErrors(['msg' => 'An error occurred while deleting the merchant.']);
+        }
     }
+    
 }

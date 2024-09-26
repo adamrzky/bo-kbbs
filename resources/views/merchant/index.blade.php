@@ -15,23 +15,19 @@
 
 
 @section('content')
-<div class="row">
-    <div class="col-lg-10 margin-tb">
-        <div class="pull-left">
-            <h2>Merchants</h2>
-        </div>
-        <div class="pull-right">
-            @can('merchant-create')
-            <a class="btn btn-success" href="{{ route('merchant.create') }}"> Create New Merchant</a>
-            @endcan
-                @can('merchant-export')
-                    <a href="{{ route('merchants.export') }}" class="btn btn-info float-right">Export to Excel</a>
-                @endcan
-            
-        </div>
+<div class="row mb-3">
+    <div class="col-lg-10">
+        <h2>Merchants</h2>
+    </div>
+    <div class="col-lg-10">
+        @can('merchant-create')
+            <a class="btn btn-success" href="{{ route('merchant.create') }}">Create New Merchant</a>
+        @endcan
+        @can('merchant-export')
+            <a href="{{ route('merchants.export') }}" class="btn btn-info">Export to Excel</a>
+        @endcan
     </div>
 </div>
-<br>
 
 @if ($message = Session::get('success'))
 <div class="alert alert-success">
@@ -40,17 +36,20 @@
 @endif
 
 <form action="{{ route('merchant.index') }}" method="GET">
-    <div class="row">
-        <div class="col-md-4"> <!-- Atur lebar input menjadi 4 kolom (kecil) -->
-            <div class="input-group mb-3">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
                 <input type="text" name="search" class="form-control" placeholder="Search Merchant" value="{{ request()->input('search') }}">
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    <a href="{{ route('merchant.index') }}" class="btn btn-outline-danger">Clear</a>
                 </div>
             </div>
         </div>
     </div>
 </form>
+
+
 
 
 
