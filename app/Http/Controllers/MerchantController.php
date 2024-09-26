@@ -54,11 +54,12 @@ class MerchantController extends Controller
         $this->middleware('permission:merchant-delete', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $getUserId = Auth::id();
         $userId = $getUserId;
         $user = Auth::user();
+        $search = $request->input('search');
 
         $query = DB::table('QRIS_MERCHANT')
 
@@ -69,6 +70,10 @@ class MerchantController extends Controller
             $query->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID');
             $query->join('users', 'user_has_merchant.USER_ID', '=', 'users.id');
             $query->where('users.id', $user->id);
+        }
+
+        if ($search) {
+            $query->where('QRIS_MERCHANT.MERCHANT_NAME', 'like', '%' . $search . '%');
         }
 
         $query->groupBy('QRIS_MERCHANT.ID');

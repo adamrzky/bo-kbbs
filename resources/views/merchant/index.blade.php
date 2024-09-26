@@ -16,7 +16,7 @@
 
 @section('content')
 <div class="row">
-    <div class="col-lg-12 margin-tb">
+    <div class="col-lg-10 margin-tb">
         <div class="pull-left">
             <h2>Merchants</h2>
         </div>
@@ -38,6 +38,21 @@
     <p>{{ $message }}</p>
 </div>
 @endif
+
+<form action="{{ route('merchant.index') }}" method="GET">
+    <div class="row">
+        <div class="col-md-4"> <!-- Atur lebar input menjadi 4 kolom (kecil) -->
+            <div class="input-group mb-3">
+                <input type="text" name="search" class="form-control" placeholder="Search Merchant" value="{{ request()->input('search') }}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
 
 
 <table class="table table-bordered">
