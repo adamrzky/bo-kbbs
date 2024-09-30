@@ -3,6 +3,8 @@
 @section('title', 'Edit Merchant')
 
 @section('content')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -55,8 +57,8 @@
                                 hidden readonly>
                             <input type="text" class="form-control" name="MERCHANT_NAME"
                                 value="{{ $merchant->MERCHANT_NAME }}" hidden readonly>
-                            <input type="text" class="form-control" name="MERCHANT_CITY"
-                                value="{{ $merchant->MERCHANT_CITY }}" hidden readonly>
+                            {{-- <input type="text" class="form-control" name="MERCHANT_CITY"
+                                value="{{ $merchant->MERCHANT_CITY }}" hidden readonly> --}}
                             <input type="text" class="form-control" name="POSTAL_CODE"
                                 value="{{ $merchant->POSTAL_CODE }}" hidden readonly>
                             <input type="text" class="form-control" name="MERCHANT_CURRENCY_CODE"
@@ -79,8 +81,8 @@
                                 value="{{ $merchant->MAX_LIMIT_TRANSACTION }}" hidden readonly>
                             <input type="text" class="form-control" name="USER_ID" value="{{ $merchant->USER_ID }}"
                                 hidden readonly>
-                            <input type="text" class="form-control" name="KTP" value="{{ $merchant->KTP }}"
-                                hidden readonly>
+                            <input type="text" class="form-control" name="KTP" value="{{ $merchant->KTP }}" hidden
+                                readonly>
                             <input type="text" class="form-control" name="NPWP" value="{{ $merchant->NPWP }}"
                                 hidden readonly>
                             <input type="text" class="form-control" name="USER_ID_MOBILE"
@@ -118,9 +120,10 @@
                                     value="{{ $merchant_detail->MID }}" readonly>
                             </div>
 
+                            {{-- {{dd($kabKotaSelected)}} --}}
                             <div class="form-group col-6">
                                 <label>Kota/Kabupaten</label>
-                                <select class="form-control select2" name="city" id="city" required>
+                                <select class="form-control select2" name="MERCHANT_CITY" id="MERCHANT_CITY" required>
                                     <option value="">- Pilih Kota/Kabupaten -</option>
                                     @foreach ($kabKota as $item)
                                         <option value="{{ $item->KOTA_KABUPATEN }}"
@@ -255,62 +258,27 @@
             </div>
         </div>
     </form>
+@endsection
+<style>
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        padding-left: 0 !important;  
+        height: auto !important;     
+        margin-top: -7px !important;  
+    }
+        
+    </style>
+@section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
     <script>
         $(document).ready(function() {
-            // Event listener untuk dropdown kota/kabupaten
-            $('#city').on('change', function() {
-                var kotaKabupaten = $(this).val();
-                if (kotaKabupaten) {
-                    $.ajax({
-                        url: '{{ route('get.kecamatan') }}',
-                        type: 'GET',
-                        data: {
-                            city: kotaKabupaten
-                        },
-                        success: function(data) {
-                            $('#kecamatan').empty().append(
-                                '<option value="">- Pilih Kecamatan -</option>');
-                            $.each(data, function(key, value) {
-                                $('#kecamatan').append('<option value="' + value
-                                    .KECAMATAN + '">' + value.KECAMATAN +
-                                    '</option>');
-                            });
-
-                            $('#postalcode').empty().append(
-                                '<option value="">- Pilih Kode Pos -</option>');
-                        }
-                    });
-                } else {
-                    $('#kecamatan').empty().append('<option value="">- Pilih Kecamatan -</option>');
-                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>');
-                }
-            });
-
-            // Event listener untuk dropdown kecamatan
-            $('#kecamatan').on('change', function() {
-                var kecamatan = $(this).val();
-                if (kecamatan) {
-                    $.ajax({
-                        url: '{{ route('get.kodepos') }}',
-                        type: 'GET',
-                        data: {
-                            kecamatan: kecamatan
-                        },
-                        success: function(data) {
-                            $('#postalcode').empty().append(
-                                '<option value="">- Pilih Kode Pos -</option>');
-                            $.each(data, function(key, value) {
-                                $('#postalcode').append('<option value="' + value
-                                    .KODEPOS + '">' + value.KODEPOS + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#postalcode').empty().append('<option value="">- Pilih Kode Pos -</option>');
-                }
+            $('#MERCHANT_CITY').select2({
+                minimumResultsForSearch: '', // ini mengaktifkan fitur pencarian di semua dropdown
+                allowClear: false // tidak ada opsi "clear" atau kosong
             });
         });
     </script>
+
     <script>
         function toggleFields() {
             var selection = document.getElementById('merchantTipe').value;
