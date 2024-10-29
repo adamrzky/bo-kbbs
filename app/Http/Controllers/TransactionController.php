@@ -13,6 +13,8 @@ use App\Models\Nns;
 // use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon; // Library untuk manipulasi tanggal
+
 
 class TransactionController extends Controller
 {
@@ -41,6 +43,9 @@ class TransactionController extends Controller
 
     public function index()
     {
+
+        $today = Carbon::today()->toDateString();
+
         // $data = Http::get('http://192.168.26.26:10002/tm.php')->json();
 
         // foreach ($data as $key => $value) {
@@ -58,25 +63,22 @@ class TransactionController extends Controller
         // }
 
         // dd($data);
-        return view('transactions.index');
+        return view('transactions.index', ['startDate' => $today, 'endDate' => $today]);
     }
 
     public function data(Request $request)
     {
-
-
-
 
         if ($request->ajax()) {
 
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
 
+            // Menambahkan format tanggal untuk memastikan inklusi penuh hari terakhir
             if (!empty($startDate) && !empty($endDate)) {
                 $startDate = trim($startDate);
-                $endDate = trim($endDate) . ' 23:59:59'; // Tambahkan waktu di akhir hari untuk inklusi penuh
+                $endDate = Carbon::createFromFormat('Y-m-d', trim($endDate))->endOfDay()->toDateTimeString();
             }
-
 
 
             switch (env('APP_ENV')) {
@@ -90,7 +92,8 @@ class TransactionController extends Controller
                         ->distinct()
                         ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
                         ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-                        ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+                        ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*')
+                        ->whereBetween('QRIS_TRANSACTION_AQUERIER_MAIN.created_at', [$startDate, $endDate]);
 
                     // if ($userId != 1) { // Filter data for non-admin users
                     //     $query->where('users.id', $userId);
@@ -140,7 +143,7 @@ class TransactionController extends Controller
 
                 case 'prod':
                     $userId = Auth::id();
-                    $user = Auth::user(); 
+                    $user = Auth::user();
 
 
                     // Retrieve data from the database based on user access to merchants
@@ -148,14 +151,14 @@ class TransactionController extends Controller
                         ->distinct()
                         ->join('user_has_merchant', 'QRIS_TRANSACTION_AQUERIER_MAIN.MERCHANT_ID', '=', 'user_has_merchant.MERCHANT_ID')
                         ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
-                        ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
+                        ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*')
+                        ->whereBetween('QRIS_TRANSACTION_AQUERIER_MAIN.created_at', [$startDate, $endDate]);
 
                     if (!$user->hasRole(['Admin', 'Superadmin'])) {
                         $query->where('users.id', $userId);
                     }
 
                     $data = $query->get()->map(function ($item) {
-                        // Convert each item to an array if necessary, depending on how you need to process it
                         return (array) $item;
                     })->toArray();
 
@@ -174,12 +177,12 @@ class TransactionController extends Controller
                     break;
             }
 
-            if ($startDate && $endDate) {
-                $data = array_filter($data, function ($item) use ($startDate, $endDate) {
-                    $createdAt = $item['CREATED_AT'] ?? null;
-                    return $createdAt >= $startDate && $createdAt <= $endDate;
-                });
-            }
+            // if ($startDate && $endDate) {
+            //     $data = array_filter($data, function ($item) use ($startDate, $endDate) {
+            //         $createdAt = $item['CREATED_AT'] ?? null;
+            //         return $createdAt >= $startDate && $createdAt <= $endDate;
+            //     });
+            // }
 
 
 

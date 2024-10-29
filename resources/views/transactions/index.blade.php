@@ -288,6 +288,8 @@
 @endsection
 
 @section('js')
+
+
     {{-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> --}}
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
@@ -299,6 +301,17 @@
     <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <script>
+        var startDateInput = document.getElementById('start-date');
+        var endDateInput = document.getElementById('end-date');
+
+        // Mengatur tanggal hari ini sebagai nilai default
+        var today = new Date().toISOString().slice(0, 10);
+        startDateInput.value = today;
+        endDateInput.value = today;
+    </script>
+
 
     <script type="text/javascript">
         $(document).ready(function() {
@@ -528,7 +541,7 @@
                         $('#STATUS_TRANSACTION_TRX').val('Refund');
                     }
                     spinner.classList.add('d-none');
-                    button.disabled = false; 
+                    button.disabled = false;
                 })
                 .catch(error => {
                     spinner.classList.add('d-none');
@@ -580,7 +593,7 @@
                         $('#STATUS_TRANSACTION_RF').val('Refund');
                     }
                     spinner.classList.add('d-none');
-                    button.disabled = false; 
+                    button.disabled = false;
                 })
                 .catch(error => {
                     spinner.classList.add('d-none');
@@ -589,4 +602,6 @@
                 });
         }
     </script>
+
+
 @endsection
