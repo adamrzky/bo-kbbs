@@ -83,6 +83,7 @@ class TransactionController extends Controller
                 case 'local':
 
                     $userId = Auth::id();
+                    $user = Auth::user(); 
                     
                         // Retrieve data from the database based on user access to merchants
                         $query = DB::table('QRIS_TRANSACTION_AQUERIER_MAIN')
@@ -91,8 +92,12 @@ class TransactionController extends Controller
                                     ->join('users', 'user_has_merchant.USER_ID', '=', 'users.id')
                                     ->select('QRIS_TRANSACTION_AQUERIER_MAIN.*');
                     
-                        if ($userId != 1) { // Filter data for non-admin users
-                            $query->where('users.id', $userId);
+                        // if ($userId != 1) { // Filter data for non-admin users
+                        //     $query->where('users.id', $userId);
+                        // }
+
+                        if (!$user->hasRole(['Admin', 'Superadmin'])) {
+                            $query->where('users.id',$userId);
                         }
                     
                         $data = $query->get()->map(function ($item) {
