@@ -69,7 +69,7 @@
                                 <select class="form-control select2" name="MERCHANT_ID" id="MERCHANT_ID" required onchange="checkMerchantType()">
                                     @foreach (array_reverse($merchant) as $dropdown)
                                         <option value="{{ $dropdown->ID }}" data-qr-type="{{ $dropdown->QR_TYPE }}">
-                                            {{ $dropdown->MERCHANT_CODE }} - {{ $dropdown->MERCHANT_NAME }}
+                                            {{ $dropdown->MERCHANT_NAME }}
                                         </option>
                                     @endforeach
                                 </select>

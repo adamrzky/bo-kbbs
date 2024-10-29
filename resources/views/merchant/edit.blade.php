@@ -126,13 +126,14 @@
                                 <select class="form-control select2" name="MERCHANT_CITY" id="MERCHANT_CITY" required>
                                     <option value="">- Pilih Kota/Kabupaten -</option>
                                     @foreach ($kabKota as $item)
-                                        <option value="{{ $item->KOTA_KABUPATEN }}"
-                                            {{ $merchant->MERCHANT_CITY == $item->KOTA_KABUPATEN ? 'selected' : '' }}>
+                                        <option value="{{ $item->KOTA_KABUPATEN_MAX_15 }}"  
+                                            {{ $merchant->MERCHANT_CITY == $item->KOTA_KABUPATEN_MAX_15 ? 'selected' : '' }}>
                                             {{ $item->KOTA_KABUPATEN }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
+                            
 
                             {{-- <div class="form-group col-6">
                                 <label>Kecamatan</label>

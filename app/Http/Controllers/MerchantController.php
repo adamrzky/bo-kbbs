@@ -352,7 +352,7 @@ class MerchantController extends Controller
         $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
 
         // Ambil semua Kota/Kabupaten untuk dropdown Kota/Kabupaten
-        $kabKota = KabKota::select('KOTA_KABUPATEN')->distinct()->get();
+        $kabKota = KabKota::select('KOTA_KABUPATEN','KOTA_KABUPATEN_MAX_15')->distinct()->get();
 
         // Ambil Kecamatan berdasarkan Kota/Kabupaten yang sudah dipilih merchant
         $kecamatan = KabKota::where('KOTA_KABUPATEN', $merchant->MERCHANT_CITY)

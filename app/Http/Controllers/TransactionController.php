@@ -220,13 +220,13 @@ class TransactionController extends Controller
 
         switch (env('APP_ENV')) {
             case 'local':
-                $datas = Transaction::get()->toArray();
+                $datas = Transaction::where('ID',$idString)->get()->toArray();
                 break;
             case 'dev':
                 $datas = Http::get('http://192.168.26.26:10002/tm.php')->json();
                 break;
             case 'prod':
-                $datas = Transaction::get()->toArray();
+                $datas = Transaction::where('ID',$idString)->get()->toArray();
                 break;
         }
 
