@@ -63,7 +63,7 @@ class MerchantsExport implements FromCollection, WithHeadings, WithMapping
             $merchant->MERCHANT_TYPE_2, 
             $merchant->NPWP, 
             $merchant->KTP, 
-            $merchant->TYPE_QR, 
+            $merchant->QR_TYPE, 
             $merchant->domestic ? $merchant->domestic->NMID : '', 
             $merchant->CREATED_AT, 
             $merchant->ACCOUNT_NUMBER,

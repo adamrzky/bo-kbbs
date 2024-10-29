@@ -66,14 +66,15 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Merchant Code:</label>
-                                <select class="form-control select2" name="MERCHANT_ID" id="MERCHANT_ID" required>
+                                <select class="form-control select2" name="MERCHANT_ID" id="MERCHANT_ID" required onchange="checkMerchantType()">
                                     @foreach (array_reverse($merchant) as $dropdown)
-                                        <option value="{{ $dropdown->ID }}"> {{ $dropdown->MERCHANT_CODE }} -
-                                            {{ $dropdown->MERCHANT_NAME }}
+                                        <option value="{{ $dropdown->ID }}" data-qr-type="{{ $dropdown->QR_TYPE }}">
+                                            {{ $dropdown->MERCHANT_CODE }} - {{ $dropdown->MERCHANT_NAME }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
+                            
                             <div class="form-group col-6">
                                 <label>AMOUNT:</label>
                                 <input type="text" id="AMOUNT" name="AMOUNT" class="form-control"
@@ -97,6 +98,8 @@
                     <div class="col-xs-12 col-sm-12 col-md-12 text-center card-footer d-flex justify-content-between">
                         <!-- Tombol Submit -->
                         <button type="button" class="btn btn-success" id="store">Submit</button>
+                        <small id="submitHint" style="display: none; color: #6c757d;" class="form-text text-muted"></small> <!-- Menggunakan tag <small> dan class text-muted untuk keterangan -->
+
                         {{-- <button type="submit" class="btn btn-success" id="store">sumbit</button> --}}
 
 
@@ -139,7 +142,7 @@
     </div>
 
 
-    <div class="col-md-12">
+    {{-- <div class="col-md-12">
         <div class="card card-success">
             <div class="card-header">
                 <h3 class="card-title">QR STATIS</h3>
@@ -171,10 +174,10 @@
                 @endif
             </div>
         </div>
-    </div>
+    </div> --}}
 
 
-@endsection
+
 
 <script>
     //button create post event
@@ -275,5 +278,32 @@
         document.body.removeChild(downloadLink);
 
         alert('QR berhasil diunduh.');
+    });
+</script>
+
+
+@endsection
+<script>
+    function checkMerchantType() {
+        const merchantSelect = document.getElementById('MERCHANT_ID');
+        const selectedOption = merchantSelect.options[merchantSelect.selectedIndex];
+        const qrType = selectedOption.getAttribute('data-qr-type');
+        const submitButton = document.getElementById('store');
+        const submitHint = document.getElementById('submitHint');
+
+        if (qrType === 'S') {
+            submitButton.disabled = true;
+            submitHint.style.display = 'block';  // Menampilkan keterangan
+            submitHint.textContent = 'Submit tidak tersedia untuk QR Statik.';  // Pesan ketika dinonaktifkan
+        } else {
+            submitButton.disabled = false;
+            submitHint.style.display = 'none';  // Menyembunyikan keterangan
+            submitHint.textContent = '';  // Mengosongkan teks
+        }
+    }
+
+    $(document).ready(function() {
+        $('.select2').select2();
+        checkMerchantType();  // Memastikan status tombol dan keterangan sesuai saat halaman dimuat
     });
 </script>
