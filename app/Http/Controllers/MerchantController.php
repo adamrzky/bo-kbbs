@@ -164,10 +164,26 @@ class MerchantController extends Controller
         ]);
 
 
-        // $cek = $this->cekNorek($request->norek);
-        // if ($cek['rc'] != '0000') {
-        //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
-        // }
+        switch (env('APP_ENV')) {
+            case 'prod':
+                $cek = $this->cekNorek($request->norek);
+                if ($cek['rc'] != '0000') {
+                    return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+                }
+                break;
+            case 'dev':
+                // $cek = $this->cekNorek($request->norek);
+                // if ($cek['rc'] != '0000') {
+                //     return back()->withErrors(['msg' => 'Merchant created failed. (Invalid Account Number [No Rekening])']);
+                // }
+                break;
+            case 'local':
+                // dd('kesini');
+                break;
+        }
+
+
+
 
         DB::beginTransaction();
         try {
@@ -200,7 +216,7 @@ class MerchantController extends Controller
                 'TERMINAL_LABEL' => 'A01',
                 'MERCHANT_COUNTRY' => 'ID',
                 'QRIS_MERCHANT_DOMESTIC_ID' => $id_domestic,
-                'TYPE_QR' => '',
+                'TYPE_QR' => 'STATIS',
                 'MERCHANT_NAME' => $validatedData['merchant'],
                 'MERCHANT_CITY' => $validatedData['city'],
                 'POSTAL_CODE' => $validatedData['postalcode'],
@@ -352,7 +368,7 @@ class MerchantController extends Controller
         $merchant_domestic = MerchantDomestic::where('ID', $merchant->QRIS_MERCHANT_DOMESTIC_ID)->first();
 
         // Ambil semua Kota/Kabupaten untuk dropdown Kota/Kabupaten
-        $kabKota = KabKota::select('KOTA_KABUPATEN','KOTA_KABUPATEN_MAX_15')->distinct()->get();
+        $kabKota = KabKota::select('KOTA_KABUPATEN', 'KOTA_KABUPATEN_MAX_15')->distinct()->get();
 
         // Ambil Kecamatan berdasarkan Kota/Kabupaten yang sudah dipilih merchant
         $kecamatan = KabKota::where('KOTA_KABUPATEN', $merchant->MERCHANT_CITY)
@@ -1602,9 +1618,9 @@ class MerchantController extends Controller
         try {
             $request['deleteMerchant'] = true;
             Log::channel('merchant')->info('REQ DELETE MERCHANT ==============================================================================');
-    
+
             if ($request->NMID == null) {
-    
+
                 // Log activity for REQUEST
                 $raw_request = json_encode($request->toArray());
                 $activity_type = 'REQUEST';
@@ -1612,42 +1628,39 @@ class MerchantController extends Controller
                 $action = 'DELETE';
                 $this->logMerchantActivityNew($raw_request, null, $comment, $action, $activity_type);
                 Log::channel('merchant')->info('DELETE MERCHANT ==============================================================================');
-    
+
                 $merchant = Merchant::find($request->ID_MERCHANT);
                 if (!$merchant) {
                     return back()->withErrors(['msg' => 'Merchant not found']);
                 }
-    
+
                 $merchant->update([
                     'STATUS' => 2
                 ]);
-    
+
                 // Log response
                 $raw_response = json_encode([
                     'merchant' => $merchant,
                 ]);
-    
+
                 $activity_type = 'RESPONSE';
                 $comment = 'DELETE RESPONSE';
                 $action = 'DELETE';
                 $this->logMerchantActivityNew(null, $raw_response, $comment, $action, $activity_type);
-    
             } else {
                 $spreadsheet = $this->generateMerchantExcel($request);
                 $this->saveExcelFile($spreadsheet, $request, 'delete');
             }
-    
+
             return redirect()
                 ->route('merchant.index')
                 ->with('success', 'Merchant deleted successfully.');
-    
         } catch (\Exception $e) {
             // Log error
             Log::channel('merchant')->error('Error deleting merchant: ' . $e->getMessage());
-    
+
             // Redirect back with error message
             return back()->withErrors(['msg' => 'An error occurred while deleting the merchant.']);
         }
     }
-    
 }
