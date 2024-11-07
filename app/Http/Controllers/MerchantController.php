@@ -57,31 +57,39 @@ class MerchantController extends Controller
     public function index(Request $request)
     {
         $getUserId = Auth::id();
-        $userId = $getUserId;
         $user = Auth::user();
         $search = $request->input('search');
-
+    
         $query = DB::table('QRIS_MERCHANT')
-
             ->whereIn('STATUS', [0, 1])
             ->select('QRIS_MERCHANT.*');
-
+    
         if (!$user->hasRole(['Admin', 'Superadmin'])) {
             $query->join('user_has_merchant', 'QRIS_MERCHANT.ID', '=', 'user_has_merchant.MERCHANT_ID');
             $query->join('users', 'user_has_merchant.USER_ID', '=', 'users.id');
             $query->where('users.id', $user->id);
         }
-
+    
         if ($search) {
             $query->where('QRIS_MERCHANT.MERCHANT_NAME', 'like', '%' . $search . '%');
         }
-
+    
         $query->groupBy('QRIS_MERCHANT.ID');
-
+    
         $merchants = $query->paginate(10);
-
+    
+        // Menambahkan imagePath dan imageExists ke setiap merchant
+        $merchants->transform(function ($merchant) {
+            $nmid = $merchant->NMID;
+            $imagePath = public_path("data_pten/{$nmid}_A01.png");
+            $merchant->imagePath = $imagePath;
+            $merchant->imageExists = file_exists($imagePath);
+            return $merchant;
+        });
+    
         return view('merchant.index', ['merchants' => $merchants]);
     }
+    
 
     /**
      * Show the form for creating a new resource.

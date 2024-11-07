@@ -60,6 +60,7 @@
         <th>Merchant Name</th>
         <th>Merchant City</th>
         <th>Action</th>
+        <th>QRIS (Static)</th> <!-- Kolom baru untuk QR Code -->
     </tr>
 
     @foreach ($merchants as $row)
@@ -80,6 +81,9 @@
             @can('merchant-delete')
             <a class="btn btn-danger" href="{{ route('merchant.delete',Crypt::encrypt($row->ID)) }}">Delete</a>
             @endcan
+        </td>
+        <td>
+            <button class="btn btn-secondary" onclick="showQRModal('{{ asset("data_pten/{$row->NMID}_A01.png") }}')">Show QR</button>
         </td>
     </tr>
     @endforeach
@@ -136,6 +140,45 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrCodeModalLabel">Merchant QR Code</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="qrImage" src="" alt="QR Code" class="img-fluid" style="display: none;"> <!-- Awalnya sembunyikan -->
+                <p id="qrMessage" class="alert alert-warning" style="display: none;"></p> <!-- Pesan untuk tidak ada QR -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function showQRModal(imageUrl) {
+        var image = new Image();
+        image.onload = function() {
+            // Jika gambar berhasil dimuat
+            $('#qrImage').attr('src', imageUrl).show();
+            $('#qrMessage').hide();  // Sembunyikan pesan error jika ada
+            $('#qrCodeModal').modal('show');
+        };
+        image.onerror = function() {
+            // Jika gambar tidak bisa dimuat
+            $('#qrImage').hide();  // Sembunyikan gambar
+            $('#qrMessage').text('No QR Code available.').show();  // Tampilkan pesan error
+            $('#qrCodeModal').modal('show');
+        };
+        image.src = imageUrl;  // Trigger pemuatan gambar
+    }
+</script>
+
+
 
 <script>
     //action cek
