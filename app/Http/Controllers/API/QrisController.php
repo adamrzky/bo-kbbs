@@ -44,6 +44,8 @@ class QrisController extends Controller
             'MPI' => $mpi,
         ];
 
+        // dd($data);
+
         // Load background image
         $backgroundImage = Image::make('images/gpnPolos.jpg');
         // Resize background image to match canvas size

@@ -92,6 +92,7 @@ class QrisController extends Controller
                     "FEE_AMOUNT" =>  $request['FEE_AMOUNT'],
                     "FEE_AMOUNT_PERCENTAGE" =>  $request['FEE_AMOUNT_PERCENTAGE'],
                     "TYPE" =>  $request['TYPE'],
+                    "VA" =>  $request['VA'],
                     "EXPIRE_DATE_TIME" =>  $exp,
                 ]
             ]

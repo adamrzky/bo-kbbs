@@ -81,6 +81,11 @@
                                     placeholder="Min 10.000">
                             </div>
                             <div class="form-group col-6">
+                                <label>VA:</label>
+                                <input type="number" id="VA" name="VA" class="form-control"
+                                    placeholder="   ">
+                            </div>
+                            <div class="form-group col-6">
                                 <label>TIP_INDICATOR:</label>
                                 <input type="number" id="TIP_INDICATOR" class="form-control">
                             </div>
