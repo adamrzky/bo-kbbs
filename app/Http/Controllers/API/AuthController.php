@@ -55,35 +55,34 @@ class AuthController extends Controller
 
     public function changePassword(Request $request)
     {
-        // Validasi input
         try {
             $request->validate([
                 'email' => 'required|email|exists:users,email',
                 'current_password' => 'required|string',
-                'password' => 'required|string|min:8|confirmed',
+                'password' => 'required|string|min:8|confirmed', 
             ]);
         } catch (ValidationException $e) {
             return response()->json([
+                'RC' => '1001', // Kode error untuk validasi gagal
                 'message' => 'Validation error',
                 'errors' => $e->errors()
-            ], 422);
+            ], 422); 
         }
-
-        // Cari user berdasarkan email
+    
         $user = User::where('email', $request->email)->first();
-
-        // Verifikasi current_password 
-        if (!Hash::check($request->current_password, $user->password)) {  // Gunakan $user->password
+    
+        if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
-                'message' => 'Current password incorrect.'
+                'RC' => '1002', // Kode error untuk current password salah
+                'message' => 'Current password incorrect.' 
             ], 400);
         }
-
-        // Update password baru
+    
         $user->password = Hash::make($request->password);
         $user->save();
-
+    
         return response()->json([
+            'RC' => '0000', // Kode sukses
             'message' => 'Password successfully changed for user with email: ' . $request->email
         ]);
     }
