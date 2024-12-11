@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
 
 
 class AuthController extends Controller
@@ -54,30 +56,35 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         // Validasi input
-        $validatedData = $request->validate([
-            'user_id' => 'required|exists:users,id',  // Memastikan user_id valid
-            'current_password' => 'required',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,email',
+                'current_password' => 'required|string',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        // // Verifikasi bahwa admin yang login
-        // $admin = auth()->user();
-        // if (!$admin || !$admin->is_admin) {
-        //     return response(['message' => 'Unauthorized'], 403);  // Pastikan admin yang login
-        // }
+        // Cari user berdasarkan email
+        $user = User::where('email', $request->email)->first();
 
-        // Cari pengguna yang ingin diubah password-nya
-        $user = User::find($request->user_id);
-        
-        // Verifikasi password lama jika diperlukan (opsional, jika ingin admin melakukan perubahan tanpa password lama)
-        if ($request->has('current_password') && !Hash::check($request->current_password, $user->password)) {
-            return response(['message' => 'Current password is incorrect.'], 400);
+        // Verifikasi current_password 
+        if (!Hash::check($request->current_password, $user->password)) {  // Gunakan $user->password
+            return response()->json([
+                'message' => 'Current password incorrect.'
+            ], 400);
         }
 
         // Update password baru
-        $user->password = bcrypt($request->password);
+        $user->password = Hash::make($request->password);
         $user->save();
 
-        return response(['message' => 'Password successfully changed for user ID ' . $request->user_id]);
+        return response()->json([
+            'message' => 'Password successfully changed for user with email: ' . $request->email
+        ]);
     }
 }
