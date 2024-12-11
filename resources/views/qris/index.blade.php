@@ -218,6 +218,7 @@
         let qrType = $('#qrType').val();
         let MERCHANT_ID = $('#MERCHANT_ID').val();
         let AMOUNT = $('#AMOUNT').val();
+        let VA = $('#VA').val();
         let TIP_INDICATOR = $('#TIP_INDICATOR').val();
         let FEE_AMOUNT = $('#FEE_AMOUNT').val();
         let FEE_AMOUNT_PERCENTAGE = $('#FEE_AMOUNT_PERCENTAGE').val();
@@ -232,6 +233,7 @@
                 "qrType": qrType,
                 "MERCHANT_ID": MERCHANT_ID,
                 "AMOUNT": AMOUNT,
+                "VA": VA,
                 "TIP_INDICATOR": TIP_INDICATOR,
                 "FEE_AMOUNT": FEE_AMOUNT,
                 "FEE_AMOUNT_PERCENTAGE": FEE_AMOUNT_PERCENTAGE,
